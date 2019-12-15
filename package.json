@@ -1,0 +1,48 @@
+{
+  "name": "autoupdate-action",
+  "version": "1.0.0",
+  "description": "A GitHub Action that auto-updates PRs with changes from their base branch.",
+  "main": "src/autoupdater.ts",
+  "repository": "https://github.com/chinthakagodawita/autoupdate",
+  "author": "Chin Godawita <chin.godawita@me.com>",
+  "license": "MIT",
+  "bin": {
+    "autoupdate-action": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "ncc build bin/cli.ts --out dist",
+    "lint": "eslint . && prettier --list-different bin/*.ts src/*.ts test/*.ts",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "@octokit/types": "^5.5.0",
+    "@types/node": "^14.14.22",
+    "@vercel/ncc": "^0.27.0",
+    "typescript": "^4.1.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.2",
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-prettier": "^3.3.1",
+    "jest": "^26.6.3",
+    "nock": "^13.0.7",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "clearMocks": true,
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageProvider": "v8",
+    "testEnvironment": "node"
+  }
+}

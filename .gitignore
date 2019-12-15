@@ -1,0 +1,19 @@
+# IDE cruft.
+.vscode/
+.idea/
+
+# OS cruft.
+.DS_Store
+
+# Node
+node_modules/
+
+# Testing
+/events
+bin/local.js
+/coverage
+
+dist
+
+src/*.js
+bin/*.js
