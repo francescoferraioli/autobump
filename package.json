@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "A GitHub Action that auto-bumps PRs with changes from their base branch.",
   "main": "src/autobumper.ts",
-  "repository": "https://github.com/chinthakagodawita/autobump",
-  "author": "Chin Godawita <chin.godawita@me.com>",
+  "repository": "https://github.com/francescoferraioli/autobump",
+  "author": "Francesco Ferraioli <francesco.ferraioli@outlook.com>",
   "license": "MIT",
   "bin": {
     "autobump-action": "bin/cli.js"
