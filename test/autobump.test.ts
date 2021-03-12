@@ -6,7 +6,7 @@ if ('GITHUB_TOKEN' in process.env) {
 
 import nock from 'nock';
 import config from '../src/config-loader';
-import { AutoUpdater } from '../src/autoupdater';
+import { AutoBumper } from '../src/autobumper';
 import { PullsUpdateResponseData } from '@octokit/types';
 
 jest.mock('../src/config-loader');
@@ -67,8 +67,8 @@ describe('test `prNeedsUpdate`', () => {
       merged: true,
     };
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (pull as unknown) as PullsUpdateResponseData,
     );
     expect(needsUpdate).toEqual(false);
@@ -80,8 +80,8 @@ describe('test `prNeedsUpdate`', () => {
       state: 'closed',
     };
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (pull as unknown) as PullsUpdateResponseData,
     );
     expect(needsUpdate).toEqual(false);
@@ -95,8 +95,8 @@ describe('test `prNeedsUpdate`', () => {
         repo: null,
       },
     });
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (pull as unknown) as PullsUpdateResponseData,
     );
     expect(needsUpdate).toEqual(false);
@@ -109,8 +109,8 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 0,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -128,8 +128,8 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -150,19 +150,19 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
     const pull = clonePull();
     pull.labels = [
       {
         id: 3,
-        name: 'autoupdate',
+        name: 'autobump',
       },
       {
         id: 4,
         name: 'dependencies',
       },
     ];
-    const needsUpdate = await updater.prNeedsUpdate(pull);
+    const needsUpdate = await bumper.prNeedsUpdate(pull);
 
     expect(needsUpdate).toEqual(false);
     expect(scope.isDone()).toEqual(true);
@@ -185,8 +185,8 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -208,10 +208,10 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
     const pull = clonePull();
     pull.labels = [];
-    const needsUpdate = await updater.prNeedsUpdate(pull);
+    const needsUpdate = await bumper.prNeedsUpdate(pull);
 
     expect(needsUpdate).toEqual(false);
     expect(scope.isDone()).toEqual(true);
@@ -231,8 +231,8 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -254,7 +254,7 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
     const pull = clonePull();
     pull.labels = [
       {
@@ -262,7 +262,7 @@ describe('test `prNeedsUpdate`', () => {
         name: 'three',
       },
     ];
-    const needsUpdate = await updater.prNeedsUpdate(pull);
+    const needsUpdate = await bumper.prNeedsUpdate(pull);
 
     expect(needsUpdate).toEqual(true);
     expect(scope.isDone()).toEqual(true);
@@ -284,8 +284,8 @@ describe('test `prNeedsUpdate`', () => {
         protected: true,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -312,8 +312,8 @@ describe('test `prNeedsUpdate`', () => {
         protected: false,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -334,8 +334,8 @@ describe('test `prNeedsUpdate`', () => {
         behind_by: 1,
       });
 
-    const updater = new AutoUpdater(config, {});
-    const needsUpdate = await updater.prNeedsUpdate(
+    const bumper = new AutoBumper(config, {});
+    const needsUpdate = await bumper.prNeedsUpdate(
       (validPull as unknown) as PullsUpdateResponseData,
     );
 
@@ -353,20 +353,20 @@ describe('test `handlePush`', () => {
     const event = cloneEvent();
     event.ref = 'not-a-branch';
 
-    const updater = new AutoUpdater(config, event);
+    const bumper = new AutoBumper(config, event);
 
-    const updateSpy = jest.spyOn(updater, 'update').mockResolvedValue(true);
+    const updateSpy = jest.spyOn(bumper, 'update').mockResolvedValue(true);
 
-    const updated = await updater.handlePush();
+    const updated = await bumper.handlePush();
 
     expect(updated).toEqual(0);
     expect(updateSpy).toHaveBeenCalledTimes(0);
   });
 
   test('push event on a branch without any PRs', async () => {
-    const updater = new AutoUpdater(config, dummyEvent);
+    const bumper = new AutoBumper(config, dummyEvent);
 
-    const updateSpy = jest.spyOn(updater, 'update').mockResolvedValue(true);
+    const updateSpy = jest.spyOn(bumper, 'update').mockResolvedValue(true);
 
     const scope = nock('https://api.github.com:443')
       .get(
@@ -374,7 +374,7 @@ describe('test `handlePush`', () => {
       )
       .reply(200, []);
 
-    const updated = await updater.handlePush();
+    const updated = await bumper.handlePush();
 
     expect(updated).toEqual(0);
     expect(updateSpy).toHaveBeenCalledTimes(0);
@@ -382,7 +382,7 @@ describe('test `handlePush`', () => {
   });
 
   test('push event on a branch with PRs', async () => {
-    const updater = new AutoUpdater(config, dummyEvent);
+    const bumper = new AutoBumper(config, dummyEvent);
 
     const pullsMock = [];
     const expectedPulls = 5;
@@ -393,7 +393,7 @@ describe('test `handlePush`', () => {
       });
     }
 
-    const updateSpy = jest.spyOn(updater, 'update').mockResolvedValue(true);
+    const updateSpy = jest.spyOn(bumper, 'update').mockResolvedValue(true);
 
     const scope = nock('https://api.github.com:443')
       .get(
@@ -401,7 +401,7 @@ describe('test `handlePush`', () => {
       )
       .reply(200, pullsMock);
 
-    const updated = await updater.handlePush();
+    const updated = await bumper.handlePush();
 
     expect(updated).toEqual(expectedPulls);
     expect(updateSpy).toHaveBeenCalledTimes(expectedPulls);
@@ -411,24 +411,24 @@ describe('test `handlePush`', () => {
 
 describe('test `handlePullRequest`', () => {
   test('pull request event with an update triggered', async () => {
-    const updater = new AutoUpdater(config, {
+    const bumper = new AutoBumper(config, {
       action: 'dummy-action',
     });
 
-    const updateSpy = jest.spyOn(updater, 'update').mockResolvedValue(true);
-    const updated = await updater.handlePullRequest();
+    const updateSpy = jest.spyOn(bumper, 'update').mockResolvedValue(true);
+    const updated = await bumper.handlePullRequest();
 
     expect(updated).toEqual(true);
     expect(updateSpy).toHaveBeenCalledTimes(1);
   });
 
   test('pull request event without an update', async () => {
-    const updater = new AutoUpdater(config, {
+    const bumper = new AutoBumper(config, {
       action: 'dummy-action',
     });
 
-    const updateSpy = jest.spyOn(updater, 'update').mockResolvedValue(false);
-    const updated = await updater.handlePullRequest();
+    const updateSpy = jest.spyOn(bumper, 'update').mockResolvedValue(false);
+    const updated = await bumper.handlePullRequest();
 
     expect(updated).toEqual(false);
     expect(updateSpy).toHaveBeenCalledTimes(1);
@@ -437,23 +437,23 @@ describe('test `handlePullRequest`', () => {
 
 describe('test `update`', () => {
   test('when a pull request does not need an update', async () => {
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
     const updateSpy = jest
-      .spyOn(updater, 'prNeedsUpdate')
+      .spyOn(bumper, 'prNeedsUpdate')
       .mockResolvedValue(false);
-    const needsUpdate = await updater.update(<any>validPull);
+    const needsUpdate = await bumper.update(<any>validPull);
     expect(needsUpdate).toEqual(false);
     expect(updateSpy).toHaveBeenCalledTimes(1);
   });
 
   test('dry run mode', async () => {
     (config.dryRun as jest.Mock).mockReturnValue(true);
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
     const updateSpy = jest
-      .spyOn(updater, 'prNeedsUpdate')
+      .spyOn(bumper, 'prNeedsUpdate')
       .mockResolvedValue(true);
-    const mergeSpy = jest.spyOn(updater, 'merge');
-    const needsUpdate = await updater.update(<any>validPull);
+    const mergeSpy = jest.spyOn(bumper, 'merge');
+    const needsUpdate = await bumper.update(<any>validPull);
 
     expect(needsUpdate).toEqual(true);
     expect(updateSpy).toHaveBeenCalledTimes(1);
@@ -463,13 +463,13 @@ describe('test `update`', () => {
   test('custom merge message', async () => {
     const mergeMsg = 'dummy-merge-msg';
     (config.mergeMsg as jest.Mock).mockReturnValue(mergeMsg);
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
 
     const updateSpy = jest
-      .spyOn(updater, 'prNeedsUpdate')
+      .spyOn(bumper, 'prNeedsUpdate')
       .mockResolvedValue(true);
-    const mergeSpy = jest.spyOn(updater, 'merge').mockResolvedValue(true);
-    const needsUpdate = await updater.update(<any>validPull);
+    const mergeSpy = jest.spyOn(bumper, 'merge').mockResolvedValue(true);
+    const needsUpdate = await bumper.update(<any>validPull);
 
     const expectedMergeOpts = {
       owner: validPull.head.repo.owner.login,
@@ -486,13 +486,13 @@ describe('test `update`', () => {
 
   test('merge with no message', async () => {
     (config.mergeMsg as jest.Mock).mockReturnValue('');
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
 
     const updateSpy = jest
-      .spyOn(updater, 'prNeedsUpdate')
+      .spyOn(bumper, 'prNeedsUpdate')
       .mockResolvedValue(true);
-    const mergeSpy = jest.spyOn(updater, 'merge').mockResolvedValue(true);
-    const needsUpdate = await updater.update(<any>validPull);
+    const mergeSpy = jest.spyOn(bumper, 'merge').mockResolvedValue(true);
+    const needsUpdate = await bumper.update(<any>validPull);
 
     const expectedMergeOpts = {
       owner: validPull.head.repo.owner.login,
@@ -539,7 +539,7 @@ describe('test `merge`', () => {
       (config.retryCount as jest.Mock).mockReturnValue(0);
       (config.retrySleep as jest.Mock).mockReturnValue(0);
       (config.mergeConflictAction as jest.Mock).mockReturnValue(null);
-      const updater = new AutoUpdater(config, {});
+      const bumper = new AutoBumper(config, {});
 
       const scope = nock('https://api.github.com:443')
         .post(`/repos/${owner}/${repo}/merges`, {
@@ -550,9 +550,9 @@ describe('test `merge`', () => {
         .reply(responseTest.code);
 
       if (responseTest.success) {
-        await updater.merge(mergeOpts);
+        await bumper.merge(mergeOpts);
       } else {
-        await expect(updater.merge(mergeOpts)).rejects.toThrowError();
+        await expect(bumper.merge(mergeOpts)).rejects.toThrowError();
       }
 
       expect(scope.isDone()).toEqual(true);
@@ -563,7 +563,7 @@ describe('test `merge`', () => {
     const retryCount = 3;
     (config.retryCount as jest.Mock).mockReturnValue(retryCount);
     (config.mergeConflictAction as jest.Mock).mockReturnValue(null);
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
 
     const scopes = [];
     for (let i = 0; i <= retryCount; i++) {
@@ -577,7 +577,7 @@ describe('test `merge`', () => {
       scopes.push(scope);
     }
 
-    await expect(updater.merge(mergeOpts)).rejects.toThrowError();
+    await expect(bumper.merge(mergeOpts)).rejects.toThrowError();
 
     for (const scope of scopes) {
       expect(scope.isDone()).toEqual(true);
@@ -587,7 +587,7 @@ describe('test `merge`', () => {
   test('ignore merge conflicts', async () => {
     (config.retryCount as jest.Mock).mockReturnValue(0);
     (config.mergeConflictAction as jest.Mock).mockReturnValue('ignore');
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
 
     const scope = nock('https://api.github.com:443')
       .post(`/repos/${owner}/${repo}/merges`, {
@@ -599,7 +599,7 @@ describe('test `merge`', () => {
         message: 'Merge conflict',
       });
 
-    await updater.merge(mergeOpts);
+    await bumper.merge(mergeOpts);
 
     expect(scope.isDone()).toEqual(true);
   });
@@ -607,7 +607,7 @@ describe('test `merge`', () => {
   test('not ignoring merge conflicts', async () => {
     (config.retryCount as jest.Mock).mockReturnValue(0);
     (config.mergeConflictAction as jest.Mock).mockReturnValue(null);
-    const updater = new AutoUpdater(config, {});
+    const bumper = new AutoBumper(config, {});
 
     const scope = nock('https://api.github.com:443')
       .post(`/repos/${owner}/${repo}/merges`, {
@@ -619,7 +619,7 @@ describe('test `merge`', () => {
         message: 'Merge conflict',
       });
 
-    await expect(updater.merge(mergeOpts)).rejects.toThrowError(
+    await expect(bumper.merge(mergeOpts)).rejects.toThrowError(
       'Merge conflict',
     );
 
@@ -628,7 +628,7 @@ describe('test `merge`', () => {
 
   test('continue if merging throws an error', async () => {
     (config.mergeMsg as jest.Mock).mockReturnValue(null);
-    const updater = new AutoUpdater(config, dummyEvent);
+    const bumper = new AutoBumper(config, dummyEvent);
 
     const pullsMock = [];
     const expectedPulls = 5;
@@ -654,7 +654,7 @@ describe('test `merge`', () => {
     }
 
     const needsUpdateSpy = jest
-      .spyOn(updater, 'prNeedsUpdate')
+      .spyOn(bumper, 'prNeedsUpdate')
       .mockResolvedValue(true);
 
     const pullsScope = nock('https://api.github.com:443')
@@ -672,7 +672,7 @@ describe('test `merge`', () => {
         },
       };
 
-      // Throw an error halfway through the PR list to confirm that autoupdate
+      // Throw an error halfway through the PR list to confirm that autobump
       // continues to the next PR.
       if (i === 3) {
         httpStatus = 403;
@@ -688,7 +688,7 @@ describe('test `merge`', () => {
       );
     }
 
-    const updated = await updater.handlePush();
+    const updated = await bumper.handlePush();
 
     // Only 4 PRs should have been updated, not 5.
     expect(updated).toBe(expectedPulls - 1);

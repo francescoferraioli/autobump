@@ -1,13 +1,13 @@
 {
-  "name": "autoupdate-action",
+  "name": "autobump-action",
   "version": "1.0.0",
-  "description": "A GitHub Action that auto-updates PRs with changes from their base branch.",
-  "main": "src/autoupdater.ts",
-  "repository": "https://github.com/chinthakagodawita/autoupdate",
+  "description": "A GitHub Action that auto-bumps PRs with changes from their base branch.",
+  "main": "src/autobumper.ts",
+  "repository": "https://github.com/chinthakagodawita/autobump",
   "author": "Chin Godawita <chin.godawita@me.com>",
   "license": "MIT",
   "bin": {
-    "autoupdate-action": "bin/cli.js"
+    "autobump-action": "bin/cli.js"
   },
   "scripts": {
     "build": "ncc build bin/cli.ts --out dist",

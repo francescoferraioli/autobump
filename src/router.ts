@@ -1,16 +1,16 @@
-import { AutoUpdater } from '../src/autoupdater';
+import { AutoBumper } from '../src/autobumper';
 import { ConfigLoader } from '../src/config-loader';
 
 export class Router {
   eventData: any;
-  updater: AutoUpdater;
+  bumper: AutoBumper;
 
   constructor(
     config: ConfigLoader,
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     eventData: any,
   ) {
-    this.updater = new AutoUpdater(config, eventData);
+    this.bumper = new AutoBumper(config, eventData);
   }
 
   /**
@@ -21,9 +21,9 @@ export class Router {
    */
   async route(eventName: string | undefined): Promise<void> {
     if (eventName === 'pull_request') {
-      await this.updater.handlePullRequest();
+      await this.bumper.handlePullRequest();
     } else if (eventName === 'push') {
-      await this.updater.handlePush();
+      await this.bumper.handlePush();
     } else {
       throw new Error(
         `Unknown event type '${eventName}', only 'push' and 'pull_request' are supported.`,

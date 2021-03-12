@@ -12,7 +12,7 @@ interface MergeOpts {
   commit_message?: string;
 }
 
-export class AutoUpdater {
+export class AutoBumper {
   eventData: any;
   config: ConfigLoader;
   octokit: InstanceType<typeof GitHub>;
@@ -64,7 +64,7 @@ export class AutoUpdater {
     }
 
     ghCore.info(
-      `Auto update complete, ${updated} pull request(s) that point to base branch '${baseBranch}' were updated.`,
+      `Auto bump complete, ${updated} pull request(s) that point to base branch '${baseBranch}' were updated.`,
     );
 
     return updated;
@@ -78,10 +78,10 @@ export class AutoUpdater {
     const isUpdated = await this.update(this.eventData.pull_request);
     if (isUpdated) {
       ghCore.info(
-        'Auto update complete, pull request branch was updated with changes from the base branch.',
+        'Auto bump complete, pull request branch was updated with changes from the base branch.',
       );
     } else {
-      ghCore.info('Auto update complete, no changes were made.');
+      ghCore.info('Auto bump complete, no changes were made.');
     }
 
     return isUpdated;
