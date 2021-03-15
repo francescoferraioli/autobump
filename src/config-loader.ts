@@ -1,3 +1,7 @@
+export interface PackageToCheckInRepo {
+  name: string;
+  path: string;
+}
 export class ConfigLoader {
   env: NodeJS.ProcessEnv;
 
@@ -14,51 +18,20 @@ export class ConfigLoader {
     return val === 'true';
   }
 
-  pullRequestFilter(): string {
-    // one of 'all', 'protected' or 'labelled'.
-    return this.getValue('PR_FILTER', false, 'all');
-  }
-
-  pullRequestLabels(): Array<string> {
-    const rawLabels = this.getValue('PR_LABELS', false, '').toString().trim();
-    if (rawLabels === '') {
-      return [];
-    }
-    return rawLabels.split(',').map((label: string) => label.trim());
-  }
-
-  excludedLabels(): Array<string> {
-    const rawLabels = this.getValue('EXCLUDED_LABELS', false, '')
+  packagesToCheckInRepo(): PackageToCheckInRepo[] {
+    const packages: string = this.getValue('PACKAGES_TO_CHECK', true)
       .toString()
       .trim();
-    if (rawLabels === '') {
+    if (packages === '') {
       return [];
     }
-    return rawLabels.split(',').map((label: string) => label.trim());
-  }
-
-  mergeMsg(): string {
-    const msg = this.getValue('MERGE_MSG', false, '').toString().trim();
-    return msg === '' ? null : msg;
-  }
-
-  conflictMsg(): string {
-    const msg = this.getValue('CONFLICT_MSG', false, '').toString().trim();
-    return msg === '' ? null : msg;
-  }
-
-  retryCount(): number {
-    return parseInt(this.getValue('RETRY_COUNT', false, 5), 10);
-  }
-
-  retrySleep(): number {
-    // In milliseconds.
-    return parseInt(this.getValue('RETRY_SLEEP', false, 300), 10);
-  }
-
-  mergeConflictAction(): string {
-    // one of 'fail' or 'ignore'.
-    return this.getValue('MERGE_CONFLICT_ACTION', false, 'fail');
+    return packages.split(';').map((p: string) => {
+      const [name, path] = p.trim().split('|');
+      return {
+        name,
+        path,
+      };
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
