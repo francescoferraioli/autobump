@@ -1,8 +1,4 @@
-import {
-  AutoBumper,
-  AutoBumperResult,
-  AutoBumperResultRun,
-} from '../src/autobumper';
+import { AutoBumper, AutoBumperResult } from '../src/autobumper';
 import { ConfigLoader } from '../src/config-loader';
 
 export class Router {
@@ -24,13 +20,11 @@ export class Router {
    * @returns {Promise<AutoBumperResult>}
    */
   async route(eventName: string | undefined): Promise<AutoBumperResult> {
-    if (eventName === 'pull_request') {
-      return await this.bumper.handlePullRequest();
-    } else if (eventName === 'push') {
+    if (eventName === 'push') {
       return await this.bumper.handlePush();
     } else {
       throw new Error(
-        `Unknown event type '${eventName}', only 'push' and 'pull_request' are supported.`,
+        `Unknown event type '${eventName}', only 'push' is supported.`,
       );
     }
   }
