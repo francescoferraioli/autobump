@@ -1,4 +1,8 @@
-import { AutoBumper } from '../src/autobumper';
+import {
+  AutoBumper,
+  AutoBumperResult,
+  AutoBumperResultRun,
+} from '../src/autobumper';
 import { ConfigLoader } from '../src/config-loader';
 
 export class Router {
@@ -17,13 +21,13 @@ export class Router {
    * Route a Github event to a handler.
    *
    * @param eventName
-   * @returns {Promise<void>}
+   * @returns {Promise<AutoBumperResult>}
    */
-  async route(eventName: string | undefined): Promise<void> {
+  async route(eventName: string | undefined): Promise<AutoBumperResult> {
     if (eventName === 'pull_request') {
-      await this.bumper.handlePullRequest();
+      return await this.bumper.handlePullRequest();
     } else if (eventName === 'push') {
-      await this.bumper.handlePush();
+      return await this.bumper.handlePush();
     } else {
       throw new Error(
         `Unknown event type '${eventName}', only 'push' and 'pull_request' are supported.`,

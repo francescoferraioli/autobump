@@ -12,6 +12,36 @@ interface MergeOpts {
   commit_message?: string;
 }
 
+export interface AutoBumperResult {
+  run?: AutoBumperResultRun[];
+}
+
+export interface AutoBumperResultRun {
+  branch: string;
+  path: string;
+  bump: string;
+  version: string;
+}
+
+export function stringifyAutoBumperResultRun({
+  branch,
+  path,
+  bump,
+  version,
+}: AutoBumperResultRun) {
+  return [branch, path, bump, version].join('|');
+}
+
+export function createSkipResult(): AutoBumperResult {
+  return {};
+}
+
+export function createRunResult(run: AutoBumperResultRun[]): AutoBumperResult {
+  return {
+    run,
+  };
+}
+
 export class AutoBumper {
   eventData: any;
   config: ConfigLoader;
@@ -27,14 +57,14 @@ export class AutoBumper {
     this.octokit = github.getOctokit(this.config.githubToken());
   }
 
-  async handlePush(): Promise<number> {
+  async handlePush(): Promise<AutoBumperResult> {
     const { ref, repository } = this.eventData;
 
     ghCore.info(`Handling push event on ref '${ref}'`);
 
     if (!ref.startsWith('refs/heads/')) {
       ghCore.warning('Push event was not on a branch, skipping.');
-      return 0;
+      return createSkipResult();
     }
 
     const baseBranch = ref.replace('refs/heads/', '');
@@ -67,10 +97,10 @@ export class AutoBumper {
       `Auto bump complete, ${updated} pull request(s) that point to base branch '${baseBranch}' were updated.`,
     );
 
-    return updated;
+    return createSkipResult();
   }
 
-  async handlePullRequest(): Promise<boolean> {
+  async handlePullRequest(): Promise<AutoBumperResult> {
     const { action } = this.eventData;
 
     ghCore.info(`Handling pull_request event triggered by action '${action}'`);
@@ -84,7 +114,7 @@ export class AutoBumper {
       ghCore.info('Auto bump complete, no changes were made.');
     }
 
-    return isUpdated;
+    return createSkipResult();
   }
 
   async update(pull: octokit.PullsUpdateResponseData): Promise<boolean> {
