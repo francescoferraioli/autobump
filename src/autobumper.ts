@@ -6,14 +6,7 @@ import {
   ConfigLoader,
   PackageToCheckInRepo as PackageToCheckInRepo,
 } from './config-loader';
-
-interface MergeOpts {
-  owner: string;
-  repo: string;
-  base: string;
-  head: string;
-  commit_message?: string;
-}
+import { lt, SemVer } from 'semver';
 
 export interface AutoBumperResult {
   run?: PackageToBump[];
@@ -94,10 +87,6 @@ export class AutoBumper {
       }
     }
 
-    ghCore.info(
-      `Auto bump complete, ${results.length} pull request(s) that point to base branch '${baseBranch}' were updated.`,
-    );
-
     return results.length === 0 ? createSkipResult() : createRunResult(results);
   }
 
@@ -111,13 +100,18 @@ export class AutoBumper {
       pull,
     );
 
+    const baseBranchName = pull.base.ref;
     const branchName = pull.head.ref;
 
-    // TODO: Get the content of the package json and see if it needs to be bumped
-
-    const packagesToBump = packagesToCheckInPullRequest.map(
-      this.mapToPackageToBump(branchName),
-    );
+    const packagesToBump = (
+      await Promise.all(
+        packagesToCheckInPullRequest.map(
+          this.checkIfBumpIsNeeded(baseBranchName, branchName),
+        ),
+      )
+    )
+      .filter((x) => x !== undefined)
+      .map((x) => x!);
 
     if (this.config.dryRun()) {
       ghCore.warning(
@@ -131,20 +125,76 @@ export class AutoBumper {
     return packagesToBump;
   }
 
-  mapToPackageToBump(branch: string) {
-    return ({
+  mapToPackageToBump(
+    branch: string,
+    { bump, path, name }: PackageToCheckInPullRequest,
+    version: string,
+  ): PackageToBump {
+    return {
+      branch,
       bump,
-      path,
       name,
-    }: PackageToCheckInPullRequest): PackageToBump => {
-      return {
-        branch,
-        bump,
-        name,
-        path,
-        version: '1.0.0',
-      };
+      path,
+      version,
     };
+  }
+
+  checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
+    return async (
+      packageToCheckInPullRequest: PackageToCheckInPullRequest,
+    ): Promise<PackageToBump | undefined> => {
+      const path = `${packageToCheckInPullRequest.path}/package.json`;
+      const baseVersion = await this.getPackageVersion(baseBranch, path);
+      const prVersion = await this.getPackageVersion(prBranch, path);
+      ghCore.info(packageToCheckInPullRequest.name);
+      ghCore.info(`${baseBranch}: ${baseVersion}`);
+      ghCore.info(`${prBranch}: ${prVersion}`);
+
+      if (lt(baseVersion, prVersion)) {
+        return undefined;
+      }
+
+      return this.mapToPackageToBump(
+        prBranch,
+        packageToCheckInPullRequest,
+        this.getNextVersion(baseVersion, packageToCheckInPullRequest.bump),
+      );
+    };
+  }
+
+  getNextVersion(baseVersion: string, bump: string): string {
+    const { major, minor, patch } = new SemVer(baseVersion);
+    const versions: [number, string][] = [
+      [major, 'major'],
+      [minor, 'minor'],
+      [patch, 'patch'],
+    ];
+    return versions
+      .map(([current, expectedBump]) =>
+        this.bumpIf(current, expectedBump, bump),
+      )
+      .join('.');
+  }
+
+  bumpIf(current: number, expectedBump: string, actualBump: string): number {
+    return expectedBump === actualBump ? current + 1 : current;
+  }
+
+  getPackageVersion(ref: string, path: string): Promise<string> {
+    return this.getFileContents(ref, path)
+      .then(JSON.parse)
+      .then(({ version }) => version);
+  }
+
+  getFileContents(ref: string, path: string): Promise<string> {
+    return this.octokit.repos
+      .getContent({
+        owner: this.eventData.repository.owner.name,
+        repo: this.eventData.repository.name,
+        ref,
+        path,
+      })
+      .then((result) => Buffer.from(result.data.content, 'base64').toString());
   }
 
   async getPackagesToCheckInPullRequest(
