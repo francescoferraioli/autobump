@@ -2,10 +2,7 @@ import * as github from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
 import * as ghCore from '@actions/core';
 import * as octokit from '@octokit/types';
-import {
-  ConfigLoader,
-  PackageToCheckInRepo as PackageToCheckInRepo,
-} from './config-loader';
+import { ConfigLoader, PackageInRepo as PackageInRepo } from './config-loader';
 import { lt, SemVer } from 'semver';
 
 export interface AutoBumperResult {
@@ -96,16 +93,14 @@ export class AutoBumper {
     const { ref } = pull.head;
     ghCore.info(`Evaluating pull request #${pull.number}...`);
 
-    const packagesToCheckInPullRequest = await this.getPackagesToCheckInPullRequest(
-      pull,
-    );
+    const packagesInPullRequest = await this.getPackagesInPullRequest(pull);
 
     const baseBranchName = pull.base.ref;
     const branchName = pull.head.ref;
 
     const packagesToBump = (
       await Promise.all(
-        packagesToCheckInPullRequest.map(
+        packagesInPullRequest.map(
           this.checkIfBumpIsNeeded(baseBranchName, branchName),
         ),
       )
@@ -127,7 +122,7 @@ export class AutoBumper {
 
   mapToPackageToBump(
     branch: string,
-    { bump, path, name }: PackageToCheckInPullRequest,
+    { bump, path, name }: PackageInPullRequest,
     version: string,
   ): PackageToBump {
     return {
@@ -141,12 +136,12 @@ export class AutoBumper {
 
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
     return async (
-      packageToCheckInPullRequest: PackageToCheckInPullRequest,
+      packageInPullRequest: PackageInPullRequest,
     ): Promise<PackageToBump | undefined> => {
-      const path = `${packageToCheckInPullRequest.path}/package.json`;
+      const path = `${packageInPullRequest.path}/package.json`;
       const baseVersion = await this.getPackageVersion(baseBranch, path);
       const prVersion = await this.getPackageVersion(prBranch, path);
-      ghCore.info(packageToCheckInPullRequest.name);
+      ghCore.info(packageInPullRequest.name);
       ghCore.info(`${baseBranch}: ${baseVersion}`);
       ghCore.info(`${prBranch}: ${prVersion}`);
 
@@ -156,8 +151,8 @@ export class AutoBumper {
 
       return this.mapToPackageToBump(
         prBranch,
-        packageToCheckInPullRequest,
-        this.getNextVersion(baseVersion, packageToCheckInPullRequest.bump),
+        packageInPullRequest,
+        this.getNextVersion(baseVersion, packageInPullRequest.bump),
       );
     };
   }
@@ -197,9 +192,9 @@ export class AutoBumper {
       .then((result) => Buffer.from(result.data.content, 'base64').toString());
   }
 
-  async getPackagesToCheckInPullRequest(
+  async getPackagesInPullRequest(
     pull: octokit.PullsUpdateResponseData,
-  ): Promise<PackageToCheckInPullRequest[]> {
+  ): Promise<PackageInPullRequest[]> {
     if (pull.merged === true) {
       ghCore.warning('Skipping pull request, already merged.');
       return [];
@@ -217,7 +212,7 @@ export class AutoBumper {
       return [];
     }
 
-    const packagesToCheck = this.config.packagesToCheckInRepo();
+    const packagesToRepo = this.config.packagesInRepo();
 
     const autoBumpLabels: AutoBumpLabel[] = pull.labels
       .map(({ name }) => name)
@@ -226,24 +221,28 @@ export class AutoBumper {
       .filter((x) => x !== undefined)
       .map((x) => x!);
 
-    return packagesToCheck
-      .map((packageToCheck) => {
-        const autoBumpLabel = autoBumpLabels.find(
-          ({ packageName }) => packageName === packageToCheck.name,
-        );
-        if (!autoBumpLabel) {
-          return undefined;
-        }
-
-        return {
-          ...packageToCheck,
-          bump: autoBumpLabel.bump,
-        };
-      })
+    return packagesToRepo
+      .map(mapToPackageInPullRequest(autoBumpLabels))
       .filter((x) => x !== undefined)
       .map((x) => x!);
   }
 }
+
+const mapToPackageInPullRequest = (autoBumpLabels: AutoBumpLabel[]) => (
+  packageInRepo: PackageInRepo,
+) => {
+  const autoBumpLabel = autoBumpLabels.find(
+    ({ packageName }) => packageName === packageInRepo.name,
+  );
+  if (!autoBumpLabel) {
+    return undefined;
+  }
+
+  return {
+    ...packageInRepo,
+    bump: autoBumpLabel.bump,
+  };
+};
 
 function mapToAutoBumpLabel(label: string): AutoBumpLabel | undefined {
   let labelParts = label.split('-');
@@ -272,6 +271,6 @@ export interface AutoBumpLabel {
   bump: string;
 }
 
-export type PackageToCheckInPullRequest = PackageToCheckInRepo & {
+export type PackageInPullRequest = PackageInRepo & {
   bump: string;
 };

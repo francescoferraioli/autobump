@@ -1,4 +1,4 @@
-export interface PackageToCheckInRepo {
+export interface PackageInRepo {
   name: string;
   path: string;
 }
@@ -18,8 +18,8 @@ export class ConfigLoader {
     return val === 'true';
   }
 
-  packagesToCheckInRepo(): PackageToCheckInRepo[] {
-    const packages: string = this.getValue('PACKAGES_TO_CHECK', true)
+  packagesInRepo(): PackageInRepo[] {
+    const packages: string = this.getValue('PACKAGES_IN_REPO', true)
       .toString()
       .trim();
     if (packages === '') {
