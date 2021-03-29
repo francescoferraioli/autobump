@@ -143,7 +143,18 @@ export class AutoBumper {
       const path = `${packageInPullRequest.path}/package.json`;
       const baseVersion = await this.getPackageVersion(baseBranch, path);
       const prVersion = await this.getPackageVersion(prBranch, path);
+
       ghCore.info(packageInPullRequest.name);
+
+      if (!baseVersion) {
+        ghCore.error(`${baseBranch}: Package version is undefined`);
+        return undefined;
+      }
+      if (!prVersion) {
+        ghCore.error(`${prBranch}: Package version is undefined`);
+        return undefined;
+      }
+
       ghCore.info(`${baseBranch}: ${baseVersion}`);
       ghCore.info(`${prBranch}: ${prVersion}`);
 
@@ -158,7 +169,7 @@ export class AutoBumper {
     };
   }
 
-  getPackageVersion(ref: string, path: string): Promise<string> {
+  getPackageVersion(ref: string, path: string): Promise<string | undefined> {
     return this.getFileContents(ref, path)
       .then(JSON.parse)
       .then(({ version }) => version);
