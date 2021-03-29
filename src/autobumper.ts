@@ -11,6 +11,7 @@ import {
   PackageToBump,
 } from 'types';
 import {
+  choose,
   createRunResult,
   createSkipResult,
   filterUndefined,
@@ -122,18 +123,16 @@ export class AutoBumper {
       return [];
     }
 
-    const autoBumpLabels: AutoBumpLabel[] = filterUndefined(
+    const autoBumpLabels: AutoBumpLabel[] = choose(
       pull.labels
         .map(({ name }) => name)
-        .filter((label) => label.startsWith('autobump'))
-        .map(mapToAutoBumpLabel),
+        .filter((label) => label.startsWith('autobump')),
+      mapToAutoBumpLabel,
     );
 
     const packagesInRepo = this.config.packagesInRepo();
 
-    return filterUndefined(
-      packagesInRepo.map(mapToPackageInPullRequest(autoBumpLabels)),
-    );
+    return choose(packagesInRepo, mapToPackageInPullRequest(autoBumpLabels));
   }
 
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
