@@ -184,8 +184,6 @@ export class AutoBumper {
       return [];
     }
 
-    const packagesToRepo = this.config.packagesInRepo();
-
     const autoBumpLabels: AutoBumpLabel[] = pull.labels
       .map(({ name }) => name)
       .filter((label) => label.startsWith('autobump'))
@@ -193,7 +191,9 @@ export class AutoBumper {
       .filter((x) => x !== undefined)
       .map((x) => x!);
 
-    return packagesToRepo
+    const packagesInRepo = this.config.packagesInRepo();
+
+    return packagesInRepo
       .map(mapToPackageInPullRequest(autoBumpLabels))
       .filter((x) => x !== undefined)
       .map((x) => x!);
