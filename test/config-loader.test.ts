@@ -1,4 +1,4 @@
-import { ConfigLoader } from '../src/config-loader';
+import { ConfigLoader, PackageInRepo } from '../src/config-loader';
 
 const tests = [
   {
@@ -16,60 +16,10 @@ const tests = [
     type: 'bool',
   },
   {
-    name: 'pullRequestFilter',
-    envVar: 'PR_FILTER',
-    required: false,
-    default: 'all',
-    type: 'string',
-  },
-  {
-    name: 'pullRequestLabels',
-    envVar: 'PR_LABELS',
-    required: false,
-    default: [],
-    type: 'list',
-  },
-  {
-    name: 'excludedLabels',
-    envVar: 'EXCLUDED_LABELS',
-    required: false,
-    default: [],
-    type: 'list',
-  },
-  {
-    name: 'mergeMsg',
-    envVar: 'MERGE_MSG',
-    required: false,
-    default: null,
-    type: 'string',
-  },
-  {
-    name: 'conflictMsg',
-    envVar: 'CONFLICT_MSG',
-    required: false,
-    default: null,
-    type: 'string',
-  },
-  {
-    name: 'retryCount',
-    envVar: 'RETRY_COUNT',
-    required: false,
-    default: 5,
-    type: 'int',
-  },
-  {
-    name: 'retrySleep',
-    envVar: 'RETRY_SLEEP',
-    required: false,
-    default: 300,
-    type: 'int',
-  },
-  {
-    name: 'mergeConflictAction',
-    envVar: 'MERGE_CONFLICT_ACTION',
-    required: false,
-    default: 'fail',
-    type: 'string',
+    name: 'packagesInRepo',
+    envVar: 'PACKAGES_IN_REPO',
+    required: true,
+    type: 'package-list',
   },
 ];
 
@@ -77,7 +27,7 @@ for (const testDef of tests) {
   test(`test that '${testDef.name}' returns the correct environment value`, () => {
     // All environment variables are technically strings.
     let dummyValue: string;
-    let expectedValue: string | number | boolean | string[];
+    let expectedValue: string | number | boolean | string[] | PackageInRepo[];
     switch (testDef.type) {
       case 'string':
         dummyValue = 'some-dummy-value';
@@ -97,6 +47,25 @@ for (const testDef of tests) {
       case 'list':
         dummyValue = ' one,two ,three';
         expectedValue = ['one', 'two', 'three'];
+        break;
+
+      case 'package-list':
+        dummyValue =
+          'default|;domain|packages/domain;contracts|packages/contracts';
+        expectedValue = [
+          {
+            name: 'default',
+            path: '',
+          },
+          {
+            name: 'domain',
+            path: 'packages/domain',
+          },
+          {
+            name: 'contracts',
+            path: 'packages/contracts',
+          },
+        ];
         break;
 
       default:
