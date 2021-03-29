@@ -60,7 +60,7 @@ export const mapToPackageInPullRequest = (autoBumpLabels: AutoBumpLabel[]) => (
   };
 };
 
-export const mapToAutoBumpLabel = (
+export const parseAutoBumpLabel = (
   label: string,
 ): AutoBumpLabel | undefined => {
   let labelParts = label.split('-');

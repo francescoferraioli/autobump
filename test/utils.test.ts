@@ -1,5 +1,5 @@
 import { AutoBumpLabel } from '../src/types';
-import { choose, filterUndefined, mapToAutoBumpLabel } from '../src/utils';
+import { choose, filterUndefined, parseAutoBumpLabel } from '../src/utils';
 
 describe('filterUndefined', () => {
   test('does not remove any if there are none', async () => {
@@ -29,7 +29,7 @@ describe('choose', () => {
   });
 });
 
-describe('mapToAutoBumpLabel', () => {
+describe('parseAutoBumpLabel', () => {
   const invalid: string[] = [
     'test',
     'minor',
@@ -43,7 +43,7 @@ describe('mapToAutoBumpLabel', () => {
 
   invalid.forEach((input) => {
     test(`it returns undefined if not correct format: ${input}`, async () => {
-      const output = mapToAutoBumpLabel(input);
+      const output = parseAutoBumpLabel(input);
       expect(output).toBeUndefined();
     });
   });
@@ -95,7 +95,7 @@ describe('mapToAutoBumpLabel', () => {
 
   valid.forEach(({ input, expected }) => {
     test(`it parsers the label correctly: ${input}`, async () => {
-      const output = mapToAutoBumpLabel(input);
+      const output = parseAutoBumpLabel(input);
       expect(output).toStrictEqual(expected);
     });
   });

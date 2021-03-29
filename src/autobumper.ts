@@ -14,7 +14,7 @@ import {
   choose,
   filterUndefined,
   getNextVersion,
-  mapToAutoBumpLabel,
+  parseAutoBumpLabel,
   mapToPackageInPullRequest,
   mapToPackageToBump,
   stringifyPackageToBump,
@@ -128,7 +128,7 @@ export class AutoBumper {
 
     const autoBumpLabels: AutoBumpLabel[] = choose(
       pull.labels.map(({ name }) => name),
-      mapToAutoBumpLabel,
+      parseAutoBumpLabel,
     );
 
     const packagesInRepo = this.config.packagesInRepo();
