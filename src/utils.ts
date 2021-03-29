@@ -93,3 +93,6 @@ export const mapToAutoBumpLabel = (
     bump: bump as Bump,
   };
 };
+
+export const filterUndefined = <T>(items: (T | undefined)[]): T[] =>
+  items.filter((x) => x !== undefined).map((x) => x!);

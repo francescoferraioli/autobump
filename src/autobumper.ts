@@ -13,6 +13,7 @@ import {
 import {
   createRunResult,
   createSkipResult,
+  filterUndefined,
   getNextVersion,
   mapToAutoBumpLabel,
   mapToPackageInPullRequest,
@@ -81,15 +82,13 @@ export class AutoBumper {
     const baseBranchName = pull.base.ref;
     const branchName = pull.head.ref;
 
-    const packagesToBump = (
+    const packagesToBump = filterUndefined(
       await Promise.all(
         packagesInPullRequest.map(
           this.checkIfBumpIsNeeded(baseBranchName, branchName),
         ),
-      )
-    )
-      .filter((x) => x !== undefined)
-      .map((x) => x!);
+      ),
+    );
 
     if (this.config.dryRun()) {
       ghCore.warning(
@@ -123,19 +122,18 @@ export class AutoBumper {
       return [];
     }
 
-    const autoBumpLabels: AutoBumpLabel[] = pull.labels
-      .map(({ name }) => name)
-      .filter((label) => label.startsWith('autobump'))
-      .map(mapToAutoBumpLabel)
-      .filter((x) => x !== undefined)
-      .map((x) => x!);
+    const autoBumpLabels: AutoBumpLabel[] = filterUndefined(
+      pull.labels
+        .map(({ name }) => name)
+        .filter((label) => label.startsWith('autobump'))
+        .map(mapToAutoBumpLabel),
+    );
 
     const packagesInRepo = this.config.packagesInRepo();
 
-    return packagesInRepo
-      .map(mapToPackageInPullRequest(autoBumpLabels))
-      .filter((x) => x !== undefined)
-      .map((x) => x!);
+    return filterUndefined(
+      packagesInRepo.map(mapToPackageInPullRequest(autoBumpLabels)),
+    );
   }
 
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
