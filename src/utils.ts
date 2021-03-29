@@ -72,7 +72,11 @@ export const mapToAutoBumpLabel = (
     labelParts = [labelParts[0], 'default', labelParts[1]];
   }
 
-  const [, packageName, bump] = labelParts;
+  const [autoBump, packageName, bump] = labelParts;
+
+  if (autoBump !== 'autobump') {
+    return undefined;
+  }
 
   if (!BUMP_VALUES.includes(bump as any)) {
     return undefined;

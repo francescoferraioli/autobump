@@ -30,7 +30,16 @@ describe('choose', () => {
 });
 
 describe('mapToAutoBumpLabel', () => {
-  const invalid: string[] = ['test', 'minor', 'major', 'autobump-test'];
+  const invalid: string[] = [
+    'test',
+    'minor',
+    'major',
+    'test-major',
+    'autobump-test',
+    'autobump-test-not',
+    'autobumpy-patch',
+    'autobumpy-test-patch',
+  ];
 
   invalid.forEach((input) => {
     test(`it returns undefined if not correct format: ${input}`, async () => {

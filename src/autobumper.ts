@@ -127,9 +127,7 @@ export class AutoBumper {
     }
 
     const autoBumpLabels: AutoBumpLabel[] = choose(
-      pull.labels
-        .map(({ name }) => name)
-        .filter((label) => label.startsWith('autobump')),
+      pull.labels.map(({ name }) => name),
       mapToAutoBumpLabel,
     );
 
