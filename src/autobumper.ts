@@ -12,8 +12,6 @@ import {
 } from 'types';
 import {
   choose,
-  createRunResult,
-  createSkipResult,
   filterUndefined,
   getNextVersion,
   mapToAutoBumpLabel,
@@ -38,18 +36,19 @@ export class AutoBumper {
   }
 
   async handlePush(): Promise<AutoBumperResult> {
+    let result: AutoBumperResult = {};
+
     const { ref, repository } = this.eventData;
 
     ghCore.info(`Handling push event on ref '${ref}'`);
 
     if (!ref.startsWith('refs/heads/')) {
       ghCore.warning('Push event was not on a branch, skipping.');
-      return createSkipResult();
+      return result;
     }
 
     const baseBranch = ref.replace('refs/heads/', '');
 
-    let results: PackageToBump[] = [];
     const paginatorOpts = this.octokit.pulls.list.endpoint.merge({
       owner: repository.owner.name,
       repo: repository.name,
@@ -63,13 +62,17 @@ export class AutoBumper {
     for await (pullsPage of this.octokit.paginate.iterator(paginatorOpts)) {
       let pull: octokit.PullsUpdateResponseData;
       for (pull of pullsPage.data) {
-        ghCore.startGroup(`PR-${pull.number}`);
-        results = [...results, ...(await this.getPackagesToBump(pull))];
+        const branchName = pull.head.ref;
+        ghCore.startGroup(`PR-${pull.number}: ${branchName}`);
+        const packagesToBump = await this.getPackagesToBump(pull);
+        if (packagesToBump.length) {
+          result = { ...result, [branchName]: packagesToBump };
+        }
         ghCore.endGroup();
       }
     }
 
-    return results.length === 0 ? createSkipResult() : createRunResult(results);
+    return result;
   }
 
   async getPackagesToBump(
@@ -151,7 +154,6 @@ export class AutoBumper {
       }
 
       return mapToPackageToBump(
-        prBranch,
         packageInPullRequest,
         getNextVersion(baseVersion, packageInPullRequest.bump),
       );

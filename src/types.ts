@@ -8,11 +8,10 @@ export interface PackageInRepo {
 export type Bump = typeof BUMP_VALUES[number];
 
 export interface AutoBumperResult {
-  run?: PackageToBump[];
+  [branch: string]: PackageToBump[];
 }
 
 export interface PackageToBump {
-  branch: string;
   name: string;
   path: string;
   bump: Bump;

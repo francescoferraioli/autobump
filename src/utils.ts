@@ -11,18 +11,11 @@ import {
 export const BUMP_VALUES = ['major', 'minor', 'patch'] as const;
 
 export const stringifyPackageToBump = ({
-  branch,
   name,
   path,
   bump,
   version,
-}: PackageToBump) => [branch, name, path, bump, version].join('|');
-
-export const createSkipResult = (): AutoBumperResult => ({});
-
-export const createRunResult = (run: PackageToBump[]): AutoBumperResult => ({
-  run,
-});
+}: PackageToBump) => [name, path, bump, version].join('|');
 
 export const getNextVersion = (baseVersion: string, bump: string): string => {
   const { major, minor, patch } = new SemVer(baseVersion);
@@ -43,11 +36,9 @@ export const bumpIf = (
 ): number => (expectedBump === actualBump ? current + 1 : current);
 
 export const mapToPackageToBump = (
-  branch: string,
   { bump, path, name }: PackageInPullRequest,
   version: string,
 ): PackageToBump => ({
-  branch,
   bump,
   name,
   path,

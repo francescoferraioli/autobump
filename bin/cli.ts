@@ -23,10 +23,20 @@ async function main() {
   }
 
   const router = new Router(config, eventData);
-  const { run } = await router.route(eventName);
+  const result = await router.route(eventName);
+  const branches = Object.keys(result);
   setOutput(
     'AUTOBUMP_RUN',
-    run ? run.map(stringifyPackageToBump).join(';') : '',
+    branches.length
+      ? branches
+          .map(
+            (branch) =>
+              `${branch}:${result[branch]
+                .map(stringifyPackageToBump)
+                .join(';')}`,
+          )
+          .join('#')
+      : '',
   );
 }
 
