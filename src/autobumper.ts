@@ -5,6 +5,10 @@ import * as octokit from '@octokit/types';
 import { ConfigLoader, PackageInRepo as PackageInRepo } from './config-loader';
 import { lt, SemVer } from 'semver';
 
+const BUMP_VALUES = ['major', 'minor', 'patch'] as const;
+
+export type Bump = typeof BUMP_VALUES[number];
+
 export interface AutoBumperResult {
   run?: PackageToBump[];
 }
@@ -13,7 +17,7 @@ export interface PackageToBump {
   branch: string;
   name: string;
   path: string;
-  bump: string;
+  bump: Bump;
   version: string;
 }
 
@@ -198,7 +202,7 @@ export class AutoBumper {
 
 function getNextVersion(baseVersion: string, bump: string): string {
   const { major, minor, patch } = new SemVer(baseVersion);
-  const versions: [number, string][] = [
+  const versions: [number, Bump][] = [
     [major, 'major'],
     [minor, 'minor'],
     [patch, 'patch'],
@@ -258,21 +262,21 @@ function mapToAutoBumpLabel(label: string): AutoBumpLabel | undefined {
 
   const [, packageName, bump] = labelParts;
 
-  if (!['major', 'minor', 'patch'].includes(bump)) {
+  if (!BUMP_VALUES.includes(bump as any)) {
     return undefined;
   }
 
   return {
     packageName,
-    bump,
+    bump: bump as Bump,
   };
 }
 
 export interface AutoBumpLabel {
   packageName: string;
-  bump: string;
+  bump: Bump;
 }
 
 export type PackageInPullRequest = PackageInRepo & {
-  bump: string;
+  bump: Bump;
 };
