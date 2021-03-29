@@ -93,3 +93,7 @@ export const filterUndefined = <T>(items: (T | undefined)[]): T[] =>
 
 export const choose = <T, R>(items: T[], fn: (t: T) => R | undefined): R[] =>
   filterUndefined(items.map(fn));
+
+export const assertUnreachable = (_: never): never => {
+  throw new Error("Didn't expect to get here");
+};
