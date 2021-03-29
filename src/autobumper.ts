@@ -103,6 +103,41 @@ export class AutoBumper {
     return packagesToBump;
   }
 
+  async getPackagesInPullRequest(
+    pull: octokit.PullsUpdateResponseData,
+  ): Promise<PackageInPullRequest[]> {
+    if (pull.merged === true) {
+      ghCore.warning('Skipping pull request, already merged.');
+      return [];
+    }
+    if (pull.state !== 'open') {
+      ghCore.warning(
+        `Skipping pull request, no longer open (current state: ${pull.state}).`,
+      );
+      return [];
+    }
+    if (!pull.head.repo) {
+      ghCore.warning(
+        `Skipping pull request, fork appears to have been deleted.`,
+      );
+      return [];
+    }
+
+    const autoBumpLabels: AutoBumpLabel[] = pull.labels
+      .map(({ name }) => name)
+      .filter((label) => label.startsWith('autobump'))
+      .map(mapToAutoBumpLabel)
+      .filter((x) => x !== undefined)
+      .map((x) => x!);
+
+    const packagesInRepo = this.config.packagesInRepo();
+
+    return packagesInRepo
+      .map(mapToPackageInPullRequest(autoBumpLabels))
+      .filter((x) => x !== undefined)
+      .map((x) => x!);
+  }
+
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
     return async (
       packageInPullRequest: PackageInPullRequest,
@@ -141,40 +176,5 @@ export class AutoBumper {
         path,
       })
       .then((result) => Buffer.from(result.data.content, 'base64').toString());
-  }
-
-  async getPackagesInPullRequest(
-    pull: octokit.PullsUpdateResponseData,
-  ): Promise<PackageInPullRequest[]> {
-    if (pull.merged === true) {
-      ghCore.warning('Skipping pull request, already merged.');
-      return [];
-    }
-    if (pull.state !== 'open') {
-      ghCore.warning(
-        `Skipping pull request, no longer open (current state: ${pull.state}).`,
-      );
-      return [];
-    }
-    if (!pull.head.repo) {
-      ghCore.warning(
-        `Skipping pull request, fork appears to have been deleted.`,
-      );
-      return [];
-    }
-
-    const autoBumpLabels: AutoBumpLabel[] = pull.labels
-      .map(({ name }) => name)
-      .filter((label) => label.startsWith('autobump'))
-      .map(mapToAutoBumpLabel)
-      .filter((x) => x !== undefined)
-      .map((x) => x!);
-
-    const packagesInRepo = this.config.packagesInRepo();
-
-    return packagesInRepo
-      .map(mapToPackageInPullRequest(autoBumpLabels))
-      .filter((x) => x !== undefined)
-      .map((x) => x!);
   }
 }
