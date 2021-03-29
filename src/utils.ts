@@ -17,22 +17,24 @@ export const stringifyPackageToBump = ({
 }: PackageToBump) => [name, path, bump, version].join('|');
 
 export const getNextVersion = (baseVersion: string, bump: Bump): string => {
-  const { major, minor, patch } = new SemVer(baseVersion);
-  const versions: [number, Bump][] = [
-    [major, 'major'],
-    [minor, 'minor'],
-    [patch, 'patch'],
-  ];
-  return versions
-    .map(([current, expectedBump]) => bumpIf(current, expectedBump, bump))
-    .join('.');
-};
+  const constructSemVer = (
+    major: number,
+    minor: number,
+    patch: number,
+  ): string => [major, minor, patch].join('.');
 
-export const bumpIf = (
-  current: number,
-  expectedBump: Bump,
-  actualBump: Bump,
-): number => (expectedBump === actualBump ? current + 1 : current);
+  const { major, minor, patch } = new SemVer(baseVersion);
+  switch (bump) {
+    case 'major':
+      return constructSemVer(major + 1, 0, 0);
+    case 'minor':
+      return constructSemVer(major, minor + 1, 0);
+    case 'patch':
+      return constructSemVer(major, minor, patch + 1);
+    default:
+      return assertUnreachable(bump);
+  }
+};
 
 export const mapToPackageToBump = (
   { bump, path, name }: PackageInPullRequest,
