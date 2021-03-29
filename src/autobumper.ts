@@ -120,20 +120,6 @@ export class AutoBumper {
     return packagesToBump;
   }
 
-  mapToPackageToBump(
-    branch: string,
-    { bump, path, name }: PackageInPullRequest,
-    version: string,
-  ): PackageToBump {
-    return {
-      branch,
-      bump,
-      name,
-      path,
-      version,
-    };
-  }
-
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
     return async (
       packageInPullRequest: PackageInPullRequest,
@@ -149,30 +135,12 @@ export class AutoBumper {
         return undefined;
       }
 
-      return this.mapToPackageToBump(
+      return mapToPackageToBump(
         prBranch,
         packageInPullRequest,
-        this.getNextVersion(baseVersion, packageInPullRequest.bump),
+        getNextVersion(baseVersion, packageInPullRequest.bump),
       );
     };
-  }
-
-  getNextVersion(baseVersion: string, bump: string): string {
-    const { major, minor, patch } = new SemVer(baseVersion);
-    const versions: [number, string][] = [
-      [major, 'major'],
-      [minor, 'minor'],
-      [patch, 'patch'],
-    ];
-    return versions
-      .map(([current, expectedBump]) =>
-        this.bumpIf(current, expectedBump, bump),
-      )
-      .join('.');
-  }
-
-  bumpIf(current: number, expectedBump: string, actualBump: string): number {
-    return expectedBump === actualBump ? current + 1 : current;
   }
 
   getPackageVersion(ref: string, path: string): Promise<string> {
@@ -226,6 +194,40 @@ export class AutoBumper {
       .filter((x) => x !== undefined)
       .map((x) => x!);
   }
+}
+
+function getNextVersion(baseVersion: string, bump: string): string {
+  const { major, minor, patch } = new SemVer(baseVersion);
+  const versions: [number, string][] = [
+    [major, 'major'],
+    [minor, 'minor'],
+    [patch, 'patch'],
+  ];
+  return versions
+    .map(([current, expectedBump]) => bumpIf(current, expectedBump, bump))
+    .join('.');
+}
+
+function bumpIf(
+  current: number,
+  expectedBump: string,
+  actualBump: string,
+): number {
+  return expectedBump === actualBump ? current + 1 : current;
+}
+
+function mapToPackageToBump(
+  branch: string,
+  { bump, path, name }: PackageInPullRequest,
+  version: string,
+): PackageToBump {
+  return {
+    branch,
+    bump,
+    name,
+    path,
+    version,
+  };
 }
 
 const mapToPackageInPullRequest = (autoBumpLabels: AutoBumpLabel[]) => (
