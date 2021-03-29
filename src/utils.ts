@@ -16,7 +16,7 @@ export const stringifyPackageToBump = ({
   version,
 }: PackageToBump) => [name, path, bump, version].join('|');
 
-export const getNextVersion = (baseVersion: string, bump: string): string => {
+export const getNextVersion = (baseVersion: string, bump: Bump): string => {
   const { major, minor, patch } = new SemVer(baseVersion);
   const versions: [number, Bump][] = [
     [major, 'major'],
@@ -30,8 +30,8 @@ export const getNextVersion = (baseVersion: string, bump: string): string => {
 
 export const bumpIf = (
   current: number,
-  expectedBump: string,
-  actualBump: string,
+  expectedBump: Bump,
+  actualBump: Bump,
 ): number => (expectedBump === actualBump ? current + 1 : current);
 
 export const mapToPackageToBump = (
