@@ -1,5 +1,11 @@
-import { AutoBumpLabel } from '../src/types';
-import { choose, filterUndefined, parseAutoBumpLabel } from '../src/utils';
+import { AutoBumpLabel, Bump, PackageInRepo } from '../src/types';
+import {
+  choose,
+  filterUndefined,
+  getNextVersion,
+  mapToPackageInPullRequest,
+  parseAutoBumpLabel,
+} from '../src/utils';
 
 describe('filterUndefined', () => {
   test('does not remove any if there are none', async () => {
@@ -97,6 +103,81 @@ describe('parseAutoBumpLabel', () => {
     test(`it parsers the label correctly: ${input}`, async () => {
       const output = parseAutoBumpLabel(input);
       expect(output).toStrictEqual(expected);
+    });
+  });
+});
+
+describe('mapToPackageInPullRequest', () => {
+  const labels: AutoBumpLabel[] = [
+    {
+      packageName: 'default',
+      bump: 'minor',
+    },
+    {
+      packageName: 'domain',
+      bump: 'patch',
+    },
+  ];
+
+  const sut = mapToPackageInPullRequest(labels);
+
+  test('returns undefined for contracts', () => {
+    const input: PackageInRepo = {
+      name: 'contracts',
+      path: 'packages/contracts',
+    };
+    const output = sut(input);
+    expect(output).toBeUndefined();
+  });
+
+  test('returns default package with minor', () => {
+    const input: PackageInRepo = {
+      name: 'default',
+      path: '.',
+    };
+    const output = sut(input);
+    expect(output).toStrictEqual({
+      ...input,
+      bump: 'minor',
+    });
+  });
+
+  test('returns domain package with patch', () => {
+    const input: PackageInRepo = {
+      name: 'domain',
+      path: 'packages/domain',
+    };
+    const output = sut(input);
+    expect(output).toStrictEqual({
+      ...input,
+      bump: 'patch',
+    });
+  });
+});
+
+describe('getNextVersion', () => {
+  const inputs: { baseVersion: string; bump: Bump; expected: string }[] = [
+    {
+      baseVersion: '1.2.3',
+      bump: 'patch',
+      expected: '1.2.4',
+    },
+    {
+      baseVersion: '1.2.3',
+      bump: 'minor',
+      expected: '1.3.0',
+    },
+    {
+      baseVersion: '1.2.3',
+      bump: 'major',
+      expected: '2.0.0',
+    },
+  ];
+
+  inputs.forEach(({ baseVersion, bump, expected }) => {
+    test(`gets the next version: ${baseVersion} + ${bump} = ${expected}`, () => {
+      const output = getNextVersion(baseVersion, bump);
+      expect(output).toBe(expected);
     });
   });
 });
