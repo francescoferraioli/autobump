@@ -1,12 +1,11 @@
 import { SemVer } from 'semver';
 import {
-  AutoBumperResult,
   AutoBumpLabel,
   Bump,
   PackageInPullRequest,
   PackageInRepo,
   PackageToBump,
-} from 'types';
+} from './types';
 
 export const BUMP_VALUES = ['major', 'minor', 'patch'] as const;
 

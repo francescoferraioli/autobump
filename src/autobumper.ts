@@ -9,7 +9,7 @@ import {
   AutoBumpLabel,
   PackageInPullRequest,
   PackageToBump,
-} from 'types';
+} from './types';
 import {
   choose,
   filterUndefined,
@@ -18,7 +18,7 @@ import {
   mapToPackageInPullRequest,
   mapToPackageToBump,
   stringifyPackageToBump,
-} from 'utils';
+} from './utils';
 
 export class AutoBumper {
   eventData: any;

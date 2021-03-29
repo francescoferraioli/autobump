@@ -1,4 +1,4 @@
-import { PackageInRepo } from 'types';
+import { PackageInRepo } from './types';
 
 export class ConfigLoader {
   env: NodeJS.ProcessEnv;

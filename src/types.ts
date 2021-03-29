@@ -1,4 +1,4 @@
-import { BUMP_VALUES } from 'utils';
+import { BUMP_VALUES } from './utils';
 
 export interface PackageInRepo {
   name: string;
