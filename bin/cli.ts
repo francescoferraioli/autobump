@@ -4,7 +4,7 @@ import * as ghCore from '@actions/core';
 
 import { Router } from '../src/router';
 import config from '../src/config-loader';
-import { stringifyPackageToBump } from '../src/autobumper';
+import { stringifyPackageToBump } from '../src/utils';
 
 async function main() {
   const eventPath = process.env.GITHUB_EVENT_PATH;

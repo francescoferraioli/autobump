@@ -2,44 +2,23 @@ import * as github from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
 import * as ghCore from '@actions/core';
 import * as octokit from '@octokit/types';
-import { ConfigLoader, PackageInRepo as PackageInRepo } from './config-loader';
-import { lt, SemVer } from 'semver';
-
-const BUMP_VALUES = ['major', 'minor', 'patch'] as const;
-
-export type Bump = typeof BUMP_VALUES[number];
-
-export interface AutoBumperResult {
-  run?: PackageToBump[];
-}
-
-export interface PackageToBump {
-  branch: string;
-  name: string;
-  path: string;
-  bump: Bump;
-  version: string;
-}
-
-export function stringifyPackageToBump({
-  branch,
-  name,
-  path,
-  bump,
-  version,
-}: PackageToBump) {
-  return [branch, name, path, bump, version].join('|');
-}
-
-export function createSkipResult(): AutoBumperResult {
-  return {};
-}
-
-export function createRunResult(run: PackageToBump[]): AutoBumperResult {
-  return {
-    run,
-  };
-}
+import { ConfigLoader } from './config-loader';
+import { lt } from 'semver';
+import {
+  AutoBumperResult,
+  AutoBumpLabel,
+  PackageInPullRequest,
+  PackageToBump,
+} from 'types';
+import {
+  createRunResult,
+  createSkipResult,
+  getNextVersion,
+  mapToAutoBumpLabel,
+  mapToPackageInPullRequest,
+  mapToPackageToBump,
+  stringifyPackageToBump,
+} from 'utils';
 
 export class AutoBumper {
   eventData: any;
@@ -199,84 +178,3 @@ export class AutoBumper {
       .map((x) => x!);
   }
 }
-
-function getNextVersion(baseVersion: string, bump: string): string {
-  const { major, minor, patch } = new SemVer(baseVersion);
-  const versions: [number, Bump][] = [
-    [major, 'major'],
-    [minor, 'minor'],
-    [patch, 'patch'],
-  ];
-  return versions
-    .map(([current, expectedBump]) => bumpIf(current, expectedBump, bump))
-    .join('.');
-}
-
-function bumpIf(
-  current: number,
-  expectedBump: string,
-  actualBump: string,
-): number {
-  return expectedBump === actualBump ? current + 1 : current;
-}
-
-function mapToPackageToBump(
-  branch: string,
-  { bump, path, name }: PackageInPullRequest,
-  version: string,
-): PackageToBump {
-  return {
-    branch,
-    bump,
-    name,
-    path,
-    version,
-  };
-}
-
-const mapToPackageInPullRequest = (autoBumpLabels: AutoBumpLabel[]) => (
-  packageInRepo: PackageInRepo,
-) => {
-  const autoBumpLabel = autoBumpLabels.find(
-    ({ packageName }) => packageName === packageInRepo.name,
-  );
-  if (!autoBumpLabel) {
-    return undefined;
-  }
-
-  return {
-    ...packageInRepo,
-    bump: autoBumpLabel.bump,
-  };
-};
-
-function mapToAutoBumpLabel(label: string): AutoBumpLabel | undefined {
-  let labelParts = label.split('-');
-  if (labelParts.length !== 2 && labelParts.length !== 3) {
-    return undefined;
-  }
-
-  if (labelParts.length === 2) {
-    labelParts = [labelParts[0], 'default', labelParts[1]];
-  }
-
-  const [, packageName, bump] = labelParts;
-
-  if (!BUMP_VALUES.includes(bump as any)) {
-    return undefined;
-  }
-
-  return {
-    packageName,
-    bump: bump as Bump,
-  };
-}
-
-export interface AutoBumpLabel {
-  packageName: string;
-  bump: Bump;
-}
-
-export type PackageInPullRequest = PackageInRepo & {
-  bump: Bump;
-};

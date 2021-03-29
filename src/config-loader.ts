@@ -1,7 +1,5 @@
-export interface PackageInRepo {
-  name: string;
-  path: string;
-}
+import { PackageInRepo } from 'types';
+
 export class ConfigLoader {
   env: NodeJS.ProcessEnv;
 

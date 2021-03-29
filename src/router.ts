@@ -1,4 +1,5 @@
-import { AutoBumper, AutoBumperResult } from '../src/autobumper';
+import { AutoBumperResult } from 'types';
+import { AutoBumper } from '../src/autobumper';
 import { ConfigLoader } from '../src/config-loader';
 
 export class Router {
