@@ -186,7 +186,14 @@ export class AutoBumper {
   getPackageVersion(ref: string, path: string): Promise<string | undefined> {
     return this.getFileContents(ref, path)
       .then(JSON.parse)
-      .then(({ version }) => version);
+      .then(({ version }) => version)
+      .catch((e) => {
+        ghCore.error(
+          `Error occurred getting version for Ref: '${ref}' Path: '${path}' Owner: '${this.eventData.repository.owner.name}' Repo: '${this.eventData.repository.name}'`,
+        );
+        ghCore.error(e);
+        return undefined;
+      });
   }
 
   getFileContents(ref: string, path: string): Promise<string> {
