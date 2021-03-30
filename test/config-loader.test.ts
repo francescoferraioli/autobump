@@ -1,4 +1,5 @@
-import { ConfigLoader, PackageInRepo } from '../src/config-loader';
+import { ConfigLoader } from '../src/config-loader';
+import { PackageInRepo } from '../src/types';
 
 const tests = [
   {
