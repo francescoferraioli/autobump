@@ -404,7 +404,7 @@ describe('test `getPackagesToBump`', () => {
   });
 });
 
-fdescribe('test `handlePush`', () => {
+describe('test `handlePush`', () => {
   const register = (
     p: TestPackage,
     baseVersion: string,
