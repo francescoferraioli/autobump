@@ -75,6 +75,20 @@ export class AutoBumper {
     return result;
   }
 
+  async handlePullRequest(): Promise<AutoBumperResult> {
+    const { action } = this.eventData;
+
+    ghCore.info(`Handling pull_request event triggered by action '${action}'`);
+
+    const packagesToBump = await this.getPackagesToBump(
+      this.eventData.pull_request,
+    );
+
+    return packagesToBump.length
+      ? { [this.eventData.pull_request.head.ref]: packagesToBump }
+      : {};
+  }
+
   async getPackagesToBump(
     pull: octokit.PullsUpdateResponseData,
   ): Promise<PackageToBump[]> {

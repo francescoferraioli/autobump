@@ -21,11 +21,13 @@ export class Router {
    * @returns {Promise<AutoBumperResult>}
    */
   async route(eventName: string | undefined): Promise<AutoBumperResult> {
-    if (eventName === 'push') {
+    if (eventName === 'pull_request') {
+      return await this.bumper.handlePullRequest();
+    } else if (eventName === 'push') {
       return await this.bumper.handlePush();
     } else {
       throw new Error(
-        `Unknown event type '${eventName}', only 'push' is supported.`,
+        `Unknown event type '${eventName}', only 'push' and 'pull_request' are supported.`,
       );
     }
   }
