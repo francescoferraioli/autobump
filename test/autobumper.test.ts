@@ -452,3 +452,36 @@ describe('test `handlePush`', () => {
     });
   });
 });
+
+describe('test `handlePullRequest`', () => {
+  const register = (
+    p: TestPackage,
+    baseVersion: string,
+    headVersion: string,
+  ) => {
+    p.withVersion(new SemVer(baseVersion)).withRef(base).registerInGithub();
+    p.withVersion(new SemVer(headVersion)).withRef(head).registerInGithub();
+  };
+
+  test('Get correct packages', async () => {
+    register(defaultPackage, '1.2.0', '1.2.0');
+    register(domainPackage, '1.2.0', '2.0.0');
+    register(contractsPackage, '3.2.0', '2.2.1');
+    const bumper = new AutoBumper(config, {
+      ...dummyEvent,
+      action: 'opened',
+      pull_request: createPullWithLabels([
+        'autobump-minor',
+        'autobump-domain-major',
+        'autobump-contracts-patch',
+      ]),
+    });
+    const result = await bumper.handlePullRequest();
+    expect(result).toStrictEqual({
+      [head]: [
+        defaultPackage.toPackageToBump('minor', '1.3.0'),
+        contractsPackage.toPackageToBump('patch', '3.2.1'),
+      ],
+    });
+  });
+});
