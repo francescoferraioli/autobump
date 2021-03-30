@@ -224,7 +224,7 @@ export class AutoBumper {
           `Error occurred getting version for Ref: '${ref}' Path: '${path}' Owner: '${this.eventData.repository.owner.name}' Repo: '${this.eventData.repository.name}'`,
         );
         ghCore.error(e);
-        return undefined;
+        throw e;
       });
   }
 
