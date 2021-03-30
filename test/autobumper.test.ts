@@ -208,6 +208,10 @@ beforeEach(() => {
     ]);
 });
 
+afterEach(() => {
+  nock.cleanAll();
+});
+
 describe('test `getPackageVersion`', () => {
   test('default package', async () => {
     const testPackage = defaultPackage.withVersion(new SemVer('1.2.3'));
