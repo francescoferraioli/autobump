@@ -1,5 +1,6 @@
 import { SemVer } from 'semver';
 import {
+  AutoBumperResult,
   AutoBumpLabel,
   Bump,
   PackageInPullRequest,
@@ -8,6 +9,18 @@ import {
 } from './types';
 
 export const BUMP_VALUES = ['major', 'minor', 'patch'] as const;
+
+export const stringifyAutoBumpResult = (result: AutoBumperResult) => {
+  const branches = Object.keys(result);
+  return branches.length
+    ? branches
+        .map(
+          (branch) =>
+            `${branch}:${result[branch].map(stringifyPackageToBump).join(';')}`,
+        )
+        .join('#')
+    : '';
+};
 
 export const stringifyPackageToBump = ({
   name,

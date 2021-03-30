@@ -4,7 +4,7 @@ import * as ghCore from '@actions/core';
 
 import { Router } from '../src/router';
 import config from '../src/config-loader';
-import { stringifyPackageToBump } from '../src/utils';
+import { stringifyAutoBumpResult, stringifyPackageToBump } from '../src/utils';
 
 async function main() {
   const eventPath = process.env.GITHUB_EVENT_PATH;
@@ -24,20 +24,7 @@ async function main() {
 
   const router = new Router(config, eventData);
   const result = await router.route(eventName);
-  const branches = Object.keys(result);
-  setOutput(
-    'AUTOBUMP_RUN',
-    branches.length
-      ? branches
-          .map(
-            (branch) =>
-              `${branch}:${result[branch]
-                .map(stringifyPackageToBump)
-                .join(';')}`,
-          )
-          .join('#')
-      : '',
-  );
+  setOutput('AUTOBUMP_RUN', stringifyAutoBumpResult(result));
 }
 
 function setOutput(name: string, value: string) {

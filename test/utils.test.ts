@@ -1,10 +1,16 @@
-import { AutoBumpLabel, Bump, PackageInRepo } from '../src/types';
+import {
+  AutoBumperResult,
+  AutoBumpLabel,
+  Bump,
+  PackageInRepo,
+} from '../src/types';
 import {
   choose,
   filterUndefined,
   getNextVersion,
   mapToPackageInPullRequest,
   parseAutoBumpLabel,
+  stringifyAutoBumpResult,
 } from '../src/utils';
 
 describe('filterUndefined', () => {
@@ -177,6 +183,69 @@ describe('getNextVersion', () => {
   inputs.forEach(({ baseVersion, bump, expected }) => {
     test(`gets the next version: ${baseVersion} + ${bump} = ${expected}`, () => {
       const output = getNextVersion(baseVersion, bump);
+      expect(output).toBe(expected);
+    });
+  });
+});
+
+describe('stringifyAutoBumpResult', () => {
+  const inputs: { result: AutoBumperResult; expected: string }[] = [
+    {
+      result: {},
+      expected: '',
+    },
+    {
+      result: {
+        'new-feature': [
+          {
+            name: 'default',
+            path: '',
+            bump: 'major',
+            version: '3.0.0',
+          },
+        ],
+      },
+      expected: 'new-feature:default||major|3.0.0',
+    },
+    {
+      result: {
+        'first-feature': [
+          {
+            name: 'default',
+            path: '',
+            bump: 'major',
+            version: '3.0.0',
+          },
+          {
+            name: 'contracts',
+            path: '/packages/contracts',
+            bump: 'patch',
+            version: '1.2.3',
+          },
+        ],
+        'second-feature': [
+          {
+            name: 'default',
+            path: '',
+            bump: 'major',
+            version: '3.0.0',
+          },
+          {
+            name: 'domain',
+            path: '/packages/domain',
+            bump: 'minor',
+            version: '3.2.0',
+          },
+        ],
+      },
+      expected:
+        'first-feature:default||major|3.0.0;contracts|/packages/contracts|patch|1.2.3#second-feature:default||major|3.0.0;domain|/packages/domain|minor|3.2.0',
+    },
+  ];
+
+  inputs.forEach(({ result, expected }) => {
+    test(`expected: ${expected}`, () => {
+      const output = stringifyAutoBumpResult(result);
       expect(output).toBe(expected);
     });
   });
