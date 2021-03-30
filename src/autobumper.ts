@@ -58,6 +58,10 @@ export class AutoBumper {
       direction: 'desc',
     });
 
+    ghCore.info(
+      `Getting pull requests for Owner: '${repository.owner.name}' Repo: '${repository.name}' Base: '${baseBranch}'`,
+    );
+
     let pullsPage: octokit.OctokitResponse<any>;
     for await (pullsPage of this.octokit.paginate.iterator(paginatorOpts)) {
       let pull: octokit.PullsUpdateResponseData;
@@ -95,11 +99,14 @@ export class AutoBumper {
     const { ref } = pull.head;
     ghCore.info(`Evaluating pull request #${pull.number}...`);
 
+    ghCore.info(`START: Getting packages in pull request`);
     const packagesInPullRequest = await this.getPackagesInPullRequest(pull);
+    ghCore.info(`FINISH: getting packages in pull request`);
 
     const baseBranchName = pull.base.ref;
     const branchName = pull.head.ref;
 
+    ghCore.info(`START: Check if bump is needed`);
     const packagesToBump = filterUndefined(
       await Promise.all(
         packagesInPullRequest.map(
@@ -107,6 +114,7 @@ export class AutoBumper {
         ),
       ),
     );
+    ghCore.info(`END: Check if bump is needed`);
 
     if (this.config.dryRun()) {
       ghCore.warning(
@@ -117,6 +125,11 @@ export class AutoBumper {
       return [];
     }
 
+    ghCore.info(
+      `Pull request has the following packages to bump: ${packagesToBump
+        .map(stringifyPackageToBump)
+        .join('|')}`,
+    );
     return packagesToBump;
   }
 
@@ -140,14 +153,33 @@ export class AutoBumper {
       return [];
     }
 
+    ghCore.info(
+      `Pull request has the following labels: ${pull.labels
+        .map(({ name }) => name)
+        .join('|')}`,
+    );
     const autoBumpLabels: AutoBumpLabel[] = choose(
       pull.labels.map(({ name }) => name),
       parseAutoBumpLabel,
     );
 
+    ghCore.info(
+      `Pull request has the following auto bump labels: ${autoBumpLabels
+        .map(({ packageName, bump }) => `${packageName}-${bump}`)
+        .join('|')}`,
+    );
     const packagesInRepo = this.config.packagesInRepo();
 
-    return choose(packagesInRepo, mapToPackageInPullRequest(autoBumpLabels));
+    const packagesInPullRequest = choose(
+      packagesInRepo,
+      mapToPackageInPullRequest(autoBumpLabels),
+    );
+    ghCore.info(
+      `Pull request has the following packages in pull request: ${packagesInPullRequest
+        .map(({ name, bump, path }) => `${name}-${bump}-${path}`)
+        .join('|')}`,
+    );
+    return packagesInPullRequest;
   }
 
   checkIfBumpIsNeeded(baseBranch: string, prBranch: string) {
