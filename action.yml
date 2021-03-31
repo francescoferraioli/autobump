@@ -7,15 +7,18 @@ runs:
   using: "composite"
   steps:
       - name: Setup git
+        shell: bash
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
       - name: Setup npm
+        shell: bash
         run: |
           npm config set git-tag-version false
 
       - name: Run Auto Bump Script
+        shell: bash
         run: ${{ github.action_path }}/auto-bump-script.sh
         env:
           AUTOBUMP_RUN: ${{ inputs.AUTOBUMP_RUN }}
