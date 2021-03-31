@@ -51,7 +51,7 @@ export class AutoBumper {
     const baseBranch = ref.replace('refs/heads/', '');
 
     const paginatorOpts = this.octokit.pulls.list.endpoint.merge({
-      owner: repository.owner.name,
+      owner: repository.owner.login,
       repo: repository.name,
       base: baseBranch,
       state: 'open',
@@ -60,7 +60,7 @@ export class AutoBumper {
     });
 
     ghCore.info(
-      `Getting pull requests for Owner: '${repository.owner.name}' Repo: '${repository.name}' Base: '${baseBranch}'`,
+      `Getting pull requests for Owner: '${repository.owner.login}' Repo: '${repository.name}' Base: '${baseBranch}'`,
     );
 
     let pullsPage: octokit.OctokitResponse<any>;
@@ -222,7 +222,7 @@ export class AutoBumper {
       .then(({ version }) => version)
       .catch((e) => {
         ghCore.error(
-          `Error occurred getting version for Ref: '${ref}' Path: '${path}' Owner: '${this.eventData.repository.owner.name}' Repo: '${this.eventData.repository.name}'`,
+          `Error occurred getting version for Ref: '${ref}' Path: '${path}' Owner: '${this.eventData.repository.owner.login}' Repo: '${this.eventData.repository.name}'`,
         );
         ghCore.error(e);
         throw e;
@@ -232,7 +232,7 @@ export class AutoBumper {
   getFileContents(ref: string, path: string): Promise<string> {
     return this.octokit.repos
       .getContent({
-        owner: this.eventData.repository.owner.name,
+        owner: this.eventData.repository.owner.login,
         repo: this.eventData.repository.name,
         ref,
         path,

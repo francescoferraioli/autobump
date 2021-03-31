@@ -91,7 +91,7 @@ const dummyEvent = {
   ref: `refs/heads/${base}`,
   repository: {
     owner: {
-      name: owner,
+      login: owner,
     },
     name: repo,
   },
