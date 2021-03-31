@@ -33,6 +33,7 @@ export class AutoBumper {
     this.eventData = eventData;
     this.config = config;
     this.octokit = github.getOctokit(this.config.githubToken());
+    ghCore.info(`Event Data'${JSON.stringify(this.eventData)}'`);
   }
 
   async handlePush(): Promise<AutoBumperResult> {
