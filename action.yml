@@ -1,8 +1,39 @@
 name: 'Auto Bump'
 description: 'A GitHub Action that auto-bumps PRs with changes from their destination branch'
+inputs:
+  GITHUB_TOKEN:
+    required: true
+  PACKAGES_IN_REPO:
+    required: true
+  DRY_RUN:
+    required: false
+    default: false
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-branding:
-  icon: 'git-pull-request'
-  color: 'blue'
+  using: "composite"
+  steps:
+      - name: Auto Bump Action
+        id: autobump-action
+        uses: docker://francescoferraioli/autobump-action-unstable:v1
+        env:
+          GITHUB_TOKEN: "${{ inputs.GITHUB_TOKEN }}"
+          PACKAGES_IN_REPO: "${{ inputs.PACKAGES_IN_REPO }}"
+          DRY_RUN: "${{ inputs.DRY_RUN }}"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Setup npm
+        run: |
+          npm config set git-tag-version false
+
+      - name: Run Auto Bump Script
+        run: ${{ github.action_path }}/auto-bump-script.sh
+        env:
+          AUTOBUMP_RUN: ${{ steps.autobump-action.outputs.AUTOBUMP_RUN }}
