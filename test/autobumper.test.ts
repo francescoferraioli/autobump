@@ -239,7 +239,7 @@ describe('test `getPackageVersion`', () => {
 });
 
 describe('test `checkIfBumpIsNeeded`', () => {
-  test('head package behind', async () => {
+  test('head package behind base', async () => {
     const basePackage = defaultPackage.withVersion(new SemVer('1.2.3'));
     basePackage.registerInGithub();
     const headPackage = defaultPackage
@@ -258,7 +258,26 @@ describe('test `checkIfBumpIsNeeded`', () => {
     );
   });
 
-  test('head package ahead', async () => {
+  test('head package ahead of base but behind next version', async () => {
+    const basePackage = defaultPackage.withVersion(new SemVer('1.2.3'));
+    basePackage.registerInGithub();
+    const headPackage = defaultPackage
+      .withVersion(new SemVer('1.3.0'))
+      .withRef(head);
+    headPackage.registerInGithub();
+
+    const bumper = new AutoBumper(config, dummyEvent);
+    const packageToBump = await bumper.checkIfBumpIsNeeded(
+      base,
+      head,
+    )(defaultPackage.toPackageInPullRequest('major'));
+    expect(packageToBump).toBeDefined();
+    expect(packageToBump).toStrictEqual(
+      defaultPackage.toPackageToBump('major', '2.0.0'),
+    );
+  });
+
+  test('head package ahead of base', async () => {
     const basePackage = defaultPackage.withVersion(new SemVer('1.2.3'));
     basePackage.registerInGithub();
     const headPackage = defaultPackage

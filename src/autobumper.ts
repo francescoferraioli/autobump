@@ -3,7 +3,7 @@ import { GitHub } from '@actions/github/lib/utils';
 import * as ghCore from '@actions/core';
 import * as octokit from '@octokit/types';
 import { ConfigLoader } from './config-loader';
-import { lt } from 'semver';
+import { lte } from 'semver';
 import {
   AutoBumperResult,
   AutoBumpLabel,
@@ -202,17 +202,20 @@ export class AutoBumper {
         return undefined;
       }
 
+      const nextVersion = getNextVersion(
+        baseVersion,
+        packageInPullRequest.bump,
+      );
+
       ghCore.info(`${baseBranch}: ${baseVersion}`);
       ghCore.info(`${prBranch}: ${prVersion}`);
+      ghCore.info(`Next Version: ${nextVersion}`);
 
-      if (lt(baseVersion, prVersion)) {
+      if (lte(nextVersion, prVersion)) {
         return undefined;
       }
 
-      return mapToPackageToBump(
-        packageInPullRequest,
-        getNextVersion(baseVersion, packageInPullRequest.bump),
-      );
+      return mapToPackageToBump(packageInPullRequest, nextVersion);
     };
   }
 
