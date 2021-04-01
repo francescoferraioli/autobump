@@ -33,6 +33,8 @@ for AUTOBUMP in $AUTOBUMPS; do
 
     done
 
+    git pull --rebase
+
     git push
 
 done
