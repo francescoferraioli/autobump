@@ -132,6 +132,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Auto Bump Run
         uses: francescoferraioli/autobump@v3
