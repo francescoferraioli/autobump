@@ -9,7 +9,7 @@ The autobump is undertaken in 3 steps:
 2. Checkout Code
 3. Auto Bump Run
 
-This repo contains the code for steps 1 ( "Auto Bump Check" ) and 3 ( "Auto Bump Run" ). Step 2 ( "Checkout Code" ) is solved by actions/checkout@v2.
+This repo contains the code for steps 1 [( "Auto Bump Check" )](#auto-bump-check) and 3 [( "Auto Bump Run" )](#auto-bump-run). Step 2 ( "Checkout Code" ) is solved by [actions/checkout@v2](https://github.com/actions/checkout).
 
 ## Auto Bump Check
 
