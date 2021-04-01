@@ -92,7 +92,20 @@ git tag -a -m "Description of this release" v{{RELEASE_NUMBER}}
 git push --follow-tags
 ```
 
-## Example workflow set up
+## Usage
+
+Lets say you have a mono repo set up like the following:
+```
+- package.json
+|- packages/
+ |- domain/
+  |- package.json
+ |- contracts/
+  |- package.json
+```
+
+You can create a workflow like the one below:
+
 ```
 name: autobump
 on:
@@ -113,7 +126,7 @@ jobs:
         uses: docker://francescoferraioli/autobump-action:v1
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          PACKAGES_IN_REPO: "domain|packages/domain;contracts|packages/contracts"
+          PACKAGES_IN_REPO: "default|;domain|packages/domain;contracts|packages/contracts"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -125,3 +138,20 @@ jobs:
         with:
           AUTOBUMP_RUN: ${{ steps.autobump-check.outputs.AUTOBUMP_RUN }}
 ```
+
+The format of `PACKAGES_IN_REPO` is a the following for each package (seperated by `;`)
+```
+{{PACKAGE_NAME}}|{{PACKAGE_PATH}}
+```
+
+You now just have to simply label the PR with labels with the following format:
+```
+autobump-{{package-name}}-{{major|minor|patch}}
+```
+
+Now if in your PR you need to bump `major` on the root (`default`) package, `minor` on `domain` and `patch` on `contracts` you label them with:
+- `autobump-major`
+- `autobump-domain-minor`
+- `autobump-contracts-patch`
+
+Note: The `default` package is the one used when the package name is omitted.
