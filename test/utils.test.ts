@@ -103,6 +103,13 @@ describe('parseAutoBumpLabel', () => {
         bump: 'major',
       },
     },
+    {
+      input: 'autobump-bus-configuration-major',
+      expected: {
+        packageName: 'bus-configuration',
+        bump: 'major',
+      },
+    },
   ];
 
   valid.forEach(({ input, expected }) => {

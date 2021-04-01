@@ -79,7 +79,7 @@ export const parseAutoBumpLabel = (
   label: string,
 ): AutoBumpLabel | undefined => {
   let labelParts = label.split('-');
-  if (labelParts.length !== 2 && labelParts.length !== 3) {
+  if (labelParts.length < 2) {
     return undefined;
   }
 
@@ -87,18 +87,24 @@ export const parseAutoBumpLabel = (
     labelParts = [labelParts[0], 'default', labelParts[1]];
   }
 
-  const [autoBump, packageName, bump] = labelParts;
+  const [autoBump, ...rest] = labelParts;
 
   if (autoBump !== 'autobump') {
     return undefined;
   }
 
+  const [bump, ...packageName] = rest.reverse();
+
   if (!BUMP_VALUES.includes(bump as any)) {
     return undefined;
   }
 
+  if (packageName.length === 0) {
+    return undefined;
+  }
+
   return {
-    packageName,
+    packageName: packageName.reverse().join('-'),
     bump: bump as Bump,
   };
 };
