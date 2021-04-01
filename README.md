@@ -73,11 +73,10 @@ Deploys to: `francescoferraioli/autobump-action-stable`
 This is a "composite" action declared in [action.yml](action.yml).
 
 It has three steps:
-1. Setup git
-2. Setup npm
-3. Run Auto Bump Script
+1. Setup npm
+2. Run Auto Bump Script
 
-The important step is 3 ( "Run Auto Bump Script" ) which will take the `AUTOBUMP_RUN` variable as an input and actually undertake the version bumps, commit and push. The code for this is in [auto-bump-script.sh](auto-bump-script.sh).
+The important step is 2 ( "Run Auto Bump Script" ) which will take the `AUTOBUMP_RUN` variable as an input and actually undertake the version bumps, commit and push. The code for this is in [auto-bump-script.sh](auto-bump-script.sh).
 
 ### Test
 
