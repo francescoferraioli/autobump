@@ -34,6 +34,11 @@ The format of `BRANCH_DATA` is the following for each package that needs to be b
 {{PACKAGE_NAME}}|{{PACKAGE_PATH}}|{{(major|minor|patch)}}|{{NEXT_VERSION}}
 ```
 
+Example `AUTOBUMP_RUN`:
+```
+first-feature:default||major|3.0.0;contracts|/packages/contracts|patch|1.2.3#second-feature:default||major|3.0.0;domain|/packages/domain|minor|3.2.0
+```
+
 ### Test
 
 You can run tests with:
