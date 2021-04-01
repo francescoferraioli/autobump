@@ -3,14 +3,20 @@ description: 'A GitHub Action that auto-bumps PRs with changes from their destin
 inputs:
   AUTOBUMP_RUN:
     required: true
+  AUTOBUMP_USER_NAME:
+    required: false
+    default: "github-actions"
+  AUTOBUMP_USER_EMAIL:
+    required: false
+    default: "github-actions@github.com"
 runs:
   using: "composite"
   steps:
       - name: Setup git
         shell: bash
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name ${{ inputs.AUTOBUMP_USER_NAME }} 
+          git config user.email ${{ inputs.AUTOBUMP_USER_EMAIL }}
 
       - name: Setup npm
         shell: bash
