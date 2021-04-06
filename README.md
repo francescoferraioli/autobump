@@ -1,5 +1,7 @@
 # autobump
 
+A GitHub action that will automatically bump packages in your repo/monorepo configured by labels in your PRs. It will listen to pushes to the main branch and re-bump the packages on your PR if it has fallen behind according to the labels.
+
 Inspired and originally based off [chinthakagodawita/autoupdate](https://github.com/chinthakagodawita/autoupdate) but for the purposes of bumping npm packages.
 
 For a sample repo please see [francescoferraioli/autobump-test](https://github.com/francescoferraioli/autobump-test)
