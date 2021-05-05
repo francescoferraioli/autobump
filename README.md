@@ -137,7 +137,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Auto Bump Run
-        uses: francescoferraioli/autobump@v3
+        uses: francescoferraioli/autobump@v4.0.1
         with:
           AUTOBUMP_RUN: ${{ steps.autobump-check.outputs.AUTOBUMP_RUN }}
 ```
