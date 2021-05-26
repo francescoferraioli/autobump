@@ -32,6 +32,16 @@ export class ConfigLoader {
     });
   }
 
+  filterLabels(): Array<string> {
+    const rawLabels = this.getValue('FILTER_LABELS', false, '')
+      .toString()
+      .trim();
+    if (rawLabels === '') {
+      return [];
+    }
+    return rawLabels.split(',').map((label: string) => label.trim());
+  }
+
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   getValue(key: string, required = false, defaultVal?: any): any {
     if (
