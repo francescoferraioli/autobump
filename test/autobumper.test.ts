@@ -118,27 +118,36 @@ const contractsPackage: TestPackage = new TestPackage(
   new SemVer('1.0.0'),
 );
 
+const defaultLabels = [
+  {
+    id: 1,
+    name: 'autobump',
+  },
+  {
+    id: 2,
+    name: 'autobump-major',
+  },
+  {
+    id: 3,
+    name: 'autobump-domain-minor',
+  },
+  {
+    id: 4,
+    name: 'autobump-contracts-patch',
+  },
+];
+
 const createPull = (
   overrides: Partial<PullsUpdateResponseData>,
+  skipAutoBump: boolean = false,
 ): PullsUpdateResponseData => {
   const defaultPull: PullsUpdateResponseData = ({
     number: 1,
     merged: false,
     state: 'open',
-    labels: [
-      {
-        id: 1,
-        name: 'autobump-major',
-      },
-      {
-        id: 2,
-        name: 'autobump-domain-minor',
-      },
-      {
-        id: 2,
-        name: 'autobump-contracts-patch',
-      },
-    ],
+    labels: defaultLabels.filter(
+      skipAutoBump ? ({ name }) => name !== 'autobump' : () => true,
+    ),
     base: {
       ref: base,
       label: base,
@@ -161,20 +170,30 @@ const createPull = (
   };
 };
 
-const createPullWithLabels = (labels: string[]): PullsUpdateResponseData =>
+const createLabels = (
+  labels: string[],
+  skipAutoBump: boolean = false,
+): PullsUpdateResponseData['labels'] =>
+  labels.concat(skipAutoBump ? [] : 'autobump').map(
+    (name, id) =>
+      (({
+        id,
+        name,
+      } as any) as PullsUpdateResponseData['labels'][number]),
+  );
+
+const createPullWithLabels = (
+  labels: string[],
+  skipAutoBump: boolean = false,
+): PullsUpdateResponseData =>
   createPull({
-    labels: labels.map(
-      (name, id) =>
-        (({
-          id,
-          name,
-        } as any) as PullsUpdateResponseData['labels'][number]),
-    ),
+    labels: createLabels(labels, skipAutoBump),
   });
 
 const createPullForRefWithLabels = (
   ref: string,
   labels: string[],
+  skipAutoBump: boolean = false,
 ): PullsUpdateResponseData =>
   createPull({
     head: {
@@ -187,13 +206,7 @@ const createPullForRefWithLabels = (
         },
       },
     } as any,
-    labels: labels.map(
-      (name, id) =>
-        (({
-          id,
-          name,
-        } as any) as PullsUpdateResponseData['labels'][number]),
-    ),
+    labels: createLabels(labels, skipAutoBump),
   });
 
 beforeEach(() => {
@@ -206,6 +219,7 @@ beforeEach(() => {
       domainPackage.toPackageInRepo(),
       contractsPackage.toPackageInRepo(),
     ]);
+  jest.spyOn(config, 'filterLabels').mockImplementation(() => ['autobump']);
 });
 
 afterEach(() => {
@@ -383,6 +397,26 @@ describe('test `getPackagesInPullRequest`', () => {
 });
 
 describe('test `getPackagesToBump`', () => {
+  const register = (
+    p: TestPackage,
+    baseVersion: string,
+    headVersion: string,
+  ) => {
+    p.withVersion(new SemVer(baseVersion)).withRef(base).registerInGithub();
+    p.withVersion(new SemVer(headVersion)).withRef(head).registerInGithub();
+  };
+
+  beforeEach(() => {
+    register(defaultPackage, '1.2.0', '1.2.0');
+    register(domainPackage, '1.2.0', '1.3.0');
+    register(contractsPackage, '3.2.0', '2.2.1');
+  });
+
+  const correctPackages = [
+    defaultPackage.toPackageToBump('major', '2.0.0'),
+    contractsPackage.toPackageToBump('patch', '3.2.1'),
+  ];
+
   test('Skips merged', async () => {
     const bumper = new AutoBumper(config, dummyEvent);
     const packages = await bumper.getPackagesToBump(
@@ -399,31 +433,28 @@ describe('test `getPackagesToBump`', () => {
     expect(packages).toStrictEqual([]);
   });
 
-  const register = (
-    p: TestPackage,
-    baseVersion: string,
-    headVersion: string,
-  ) => {
-    p.withVersion(new SemVer(baseVersion)).withRef(base).registerInGithub();
-    p.withVersion(new SemVer(headVersion)).withRef(head).registerInGithub();
-  };
+  test('Skips if PR does not contain filter labels', async () => {
+    const bumper = new AutoBumper(config, dummyEvent);
+    const packages = await bumper.getPackagesToBump(createPull({}, true));
+    expect(packages).toStrictEqual([]);
+  });
 
   test('Get correct packages', async () => {
-    register(defaultPackage, '1.2.0', '1.2.0');
-    register(domainPackage, '1.2.0', '2.0.0');
-    register(contractsPackage, '3.2.0', '2.2.1');
     const bumper = new AutoBumper(config, dummyEvent);
-    const packages = await bumper.getPackagesToBump(
-      createPullWithLabels([
-        'autobump-minor',
-        'autobump-domain-major',
-        'autobump-contracts-patch',
-      ]),
-    );
-    expect(packages).toStrictEqual([
-      defaultPackage.toPackageToBump('minor', '1.3.0'),
-      contractsPackage.toPackageToBump('patch', '3.2.1'),
-    ]);
+    const packages = await bumper.getPackagesToBump(createPull({}));
+    expect(packages).toStrictEqual(correctPackages);
+  });
+
+  describe('No filter labels', () => {
+    beforeEach(() => {
+      jest.spyOn(config, 'filterLabels').mockImplementation(() => []);
+    });
+
+    test('Does not skips if we do not have the label', async () => {
+      const bumper = new AutoBumper(config, dummyEvent);
+      const packages = await bumper.getPackagesToBump(createPull({}, true));
+      expect(packages).toStrictEqual(correctPackages);
+    });
   });
 });
 
@@ -441,6 +472,10 @@ describe('test `handlePush`', () => {
     p.withVersion(new SemVer(baseVersion)).withRef(base).registerInGithub();
     p.withVersion(new SemVer(featureTwoVersion))
       .withRef('feature-two')
+      .registerInGithub();
+    p.withVersion(new SemVer(baseVersion)).withRef(base).registerInGithub();
+    p.withVersion(new SemVer(featureTwoVersion))
+      .withRef('feature-two-without-autobump-label')
       .registerInGithub();
   };
 
@@ -461,6 +496,11 @@ describe('test `handlePush`', () => {
           'autobump-minor',
           'autobump-contracts-major',
         ]),
+        createPullForRefWithLabels(
+          'feature-two-without-autobump-label',
+          ['autobump-minor', 'autobump-contracts-major'],
+          true,
+        ),
       ]);
     defaultPackage.registerInGithub();
     const bumper = new AutoBumper(config, dummyEvent);
