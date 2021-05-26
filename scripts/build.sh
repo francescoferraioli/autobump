@@ -4,7 +4,7 @@ set -e
 set -o nounset
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-REPO="francescoferraioli/autobump-action-$1"
+REPO="francescoferraioli/autobump-action$1"
 
 pushd "${SCRIPT_DIR}/.." > /dev/null
 
