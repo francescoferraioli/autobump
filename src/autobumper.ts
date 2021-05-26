@@ -97,15 +97,28 @@ export class AutoBumper {
   async getPackagesToBump(
     pull: octokit.PullsUpdateResponseData,
   ): Promise<PackageToBump[]> {
-    const { ref } = pull.head;
+    const baseBranchName = pull.base.ref;
+    const branchName = pull.head.ref;
+
+    const labels = this.config.filterLabels();
+    if (
+      labels.length !== 0 &&
+      pull.labels.filter(({ name }) => labels.includes(name)).length !==
+        labels.length
+    ) {
+      ghCore.warning(
+        `Skipping branch '${branchName}' because it didn't include labels '${labels.join(
+          ',',
+        )}'`,
+      );
+      return [];
+    }
+
     ghCore.info(`Evaluating pull request #${pull.number}...`);
 
     ghCore.info(`START: Getting packages in pull request`);
     const packagesInPullRequest = await this.getPackagesInPullRequest(pull);
     ghCore.info(`FINISH: getting packages in pull request`);
-
-    const baseBranchName = pull.base.ref;
-    const branchName = pull.head.ref;
 
     ghCore.info(`START: Check if bump is needed`);
     const packagesToBump = filterUndefined(
