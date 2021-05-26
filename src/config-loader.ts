@@ -39,7 +39,10 @@ export class ConfigLoader {
     if (rawLabels === '') {
       return [];
     }
-    return rawLabels.split(',').map((label: string) => label.trim());
+    return rawLabels
+      .split(',')
+      .map((label: string) => label.trim())
+      .filter((label: string) => label !== '');
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
