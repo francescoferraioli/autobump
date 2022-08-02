@@ -28,6 +28,7 @@ for AUTOBUMP in $AUTOBUMPS; do
         [ ! -z "$DIR" ] && pushd $DIR
         npm version $VERSION
         git add package.json
+        [ -f "package-lock.json" ] && git add package-lock.json
         git commit -m "Bump $BUMP on $NAME ($VERSION)"
         [ ! -z "$DIR" ] && popd
 
